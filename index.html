@@ -1055,8 +1055,9 @@ require(['vs/editor/editor.main'], function () {
       'editor.inactiveSelectionBackground':   '#2DAAE420',
       'editorCursor.foreground':              '#2DAAE4',
       'editorCursor.background':              '#101010',
-      'editorLineNumber.foreground':          '#505050',
-      'editorLineNumber.activeForeground':    '#9D9D9D',
+      'editorLineNumber.foreground':          '#858585',
+      'editorLineNumber.activeForeground':    '#D9D9D9',
+      'editorGutter.background':              '#242424',
       'editorIndentGuide.background1':        '#333333',
       'editorIndentGuide.activeBackground1':  '#505050',
       'editorBracketMatch.background':        '#2DAAE420',
@@ -1088,7 +1089,11 @@ require(['vs/editor/editor.main'], function () {
     lineHeight:                  22,
     automaticLayout:             true,
     minimap:                     { enabled: !mobile() },
-    lineNumbers:                 mobile() ? 'off' : 'on',
+    lineNumbers:                 'on',
+    lineNumbersMinChars:         4,
+    lineDecorationsWidth:        10,
+    glyphMargin:                 false,
+    renderLineHighlight:         'all',
     scrollBeyondLastLine:        false,
     wordWrap:                    'off',
     renderWhitespace:            'selection',
@@ -1104,11 +1109,12 @@ require(['vs/editor/editor.main'], function () {
     quickSuggestions:            { other: true, comments: false, strings: false },
   });
 
-  // Resize → toggle minimap / line numbers
+  // Resize → toggle minimap (line numbers always on, just narrower on mobile)
   window.addEventListener('resize', () => {
     editor.updateOptions({
-      minimap:     { enabled: !mobile() },
-      lineNumbers: mobile() ? 'off' : 'on',
+      minimap:             { enabled: !mobile() },
+      lineNumbersMinChars: mobile() ? 2 : 4,
+      fontSize:            mobile() ? 13 : 14,
     });
   });
 
@@ -1123,10 +1129,17 @@ require(['vs/editor/editor.main'], function () {
   });
 
   // Cursor → status bar
-  editor.onDidChangeCursorPosition(e => {
+  function updateStatusPos() {
+    const pos = editor.getPosition();
+    if (!pos) return;
+    const total = editor.getModel()?.getLineCount() ?? 1;
     document.getElementById('status-pos').textContent =
-      `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
-  });
+      `Ln ${pos.lineNumber} of ${total}, Col ${pos.column}`;
+  }
+
+  editor.onDidChangeCursorPosition(updateStatusPos);
+  editor.onDidChangeModelContent(updateStatusPos);
+  editor.onDidChangeModel(updateStatusPos);
 
   wireEvents();
 
