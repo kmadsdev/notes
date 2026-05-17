@@ -503,11 +503,32 @@ body {
   #preview-pane { border-left: none; border-top: 1px solid var(--border); }
   #statusbar-wrap { padding: 0 4px 4px 4px; }
   #statusbar-scrollthumb { display: none; }
-  #statusbar { padding: 0 8px; font-size: 11px; height: 24px; gap: 4px; }
-  #status-left, #status-right { gap: 8px; }
+  #statusbar { padding: 0 6px; font-size: 11px; gap: 4px; overflow: hidden; }
+  #status-left, #status-right { gap: 8px; min-width: 0; }
+  #status-pos { font-size: 10px; white-space: nowrap; }
   #status-encoding { display: none; }
-  #status-lang { padding: 4px 10px; height: auto; min-height: 24px; min-width: 80px; justify-content: center; }
   #status-handle { display: none; }
+  #status-lang {
+    padding: 4px 8px 4px 10px;
+    height: auto;
+    min-height: 26px;
+    min-width: 92px;
+    justify-content: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    font-weight: 600;
+    border-radius: 4px;
+  }
+  #status-lang::after {
+    content: '▾';
+    margin-left: 6px;
+    color: var(--accent-blue);
+    font-size: 10px;
+    line-height: 1;
+  }
+  #status-lang:active { background: var(--accent-blue); color: var(--bg); }
+  #status-lang:active::after { color: var(--bg); }
 
   /* Language picker — larger tap targets, full-bleed on short screens */
   #lang-picker-backdrop { padding-top: 0; padding: 12px; align-items: stretch; }
@@ -520,8 +541,22 @@ body {
 /* ── Touch / coarse pointer: keep desktop layout but bump tap surfaces ─ */
 @media (hover: none) and (pointer: coarse) and (min-width: 640px) {
   .tab-close { opacity: 1; }
-  #status-lang { padding: 2px 10px; }
   .lang-picker-item { padding: 12px 16px; min-height: 44px; }
+  #status-lang {
+    padding: 2px 8px 2px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-1);
+    min-width: 90px;
+    justify-content: center;
+  }
+  #status-lang::after {
+    content: '▾';
+    margin-left: 6px;
+    color: var(--accent-blue);
+    font-size: 9px;
+  }
 }
 </style>
 </head>
