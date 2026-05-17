@@ -492,7 +492,7 @@ body {
 
 /* ── Responsive: mobile < 640px ─────────────────────────────────────── */
 @media (max-width: 639px) {
-  #app { grid-template-rows: 44px 1fr 27px; }
+  #app { grid-template-rows: 44px 1fr 32px; }
   #titlebar { height: 44px; }
   #activity-bar { display: none; }
   #branding { display: none; }
@@ -503,6 +503,25 @@ body {
   #preview-pane { border-left: none; border-top: 1px solid var(--border); }
   #statusbar-wrap { padding: 0 4px 4px 4px; }
   #statusbar-scrollthumb { display: none; }
+  #statusbar { padding: 0 8px; font-size: 11px; height: 24px; gap: 4px; }
+  #status-left, #status-right { gap: 8px; }
+  #status-encoding { display: none; }
+  #status-lang { padding: 4px 10px; height: auto; min-height: 24px; min-width: 80px; justify-content: center; }
+  #status-handle { display: none; }
+
+  /* Language picker — larger tap targets, full-bleed on short screens */
+  #lang-picker-backdrop { padding-top: 0; padding: 12px; align-items: stretch; }
+  #lang-picker { width: 100%; max-height: 100%; border-radius: 10px; }
+  #lang-picker-search { padding: 16px 18px; font-size: 16px; }
+  .lang-picker-item { padding: 14px 18px; font-size: 14px; min-height: 44px; }
+  .lang-picker-item .lang-id { font-size: 12px; }
+}
+
+/* ── Touch / coarse pointer: keep desktop layout but bump tap surfaces ─ */
+@media (hover: none) and (pointer: coarse) and (min-width: 640px) {
+  .tab-close { opacity: 1; }
+  #status-lang { padding: 2px 10px; }
+  .lang-picker-item { padding: 12px 16px; min-height: 44px; }
 }
 </style>
 </head>
