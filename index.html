@@ -408,7 +408,76 @@ body {
 
 .status-item { display: flex; align-items: center; gap: 5px; }
 
+#status-lang {
+  cursor: pointer;
+  padding: 0 6px;
+  height: 19px;
+  border-radius: 2px;
+  transition: background 0.1s, color 0.1s;
+}
+#status-lang:hover { background: var(--border); color: var(--text-1); }
+
 #status-save { color: var(--accent-blue); transition: color 0.2s; }
+
+/* ── Language picker modal ───────────────────────────────────────────── */
+#lang-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  z-index: 1000;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+}
+#lang-picker-backdrop.visible { display: flex; }
+
+#lang-picker {
+  width: min(520px, 92vw);
+  max-height: 60vh;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#lang-picker-search {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text-1);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+#lang-picker-search::placeholder { color: var(--text-4); }
+
+#lang-picker-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.lang-picker-item {
+  padding: 7px 16px;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.lang-picker-item:hover,
+.lang-picker-item.focused { background: var(--bg); color: var(--text-1); }
+.lang-picker-item .lang-id { color: var(--text-4); font-size: 11px; }
+.lang-picker-item.current { color: var(--accent-blue); }
+.lang-picker-item.current::after { content: '✓'; color: var(--accent-blue); margin-left: 8px; }
 
 /* ── Responsive: tablet 640–1023px ──────────────────────────────────── */
 @media (max-width: 1023px) {
@@ -548,6 +617,14 @@ body {
 <!-- Fallback file input for Firefox/Safari -->
 <input type="file" id="file-input" multiple hidden>
 
+<!-- Language picker modal -->
+<div id="lang-picker-backdrop" role="dialog" aria-modal="true" aria-label="Select language">
+  <div id="lang-picker">
+    <input type="text" id="lang-picker-search" placeholder="Select Language Mode…" autocomplete="off" spellcheck="false">
+    <div id="lang-picker-list" role="listbox"></div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -577,31 +654,101 @@ function loadScript(src) {
 
 // ── Language detection ─────────────────────────────────────────────────────
 const EXT_LANG = {
-  js:'javascript', mjs:'javascript', cjs:'javascript',
-  ts:'typescript', jsx:'javascript', tsx:'typescript',
-  py:'python', rb:'ruby', rs:'rust', go:'go',
-  java:'java', cs:'csharp', cpp:'cpp', cc:'cpp', c:'c', h:'c', hpp:'cpp',
-  php:'php', swift:'swift', kt:'kotlin', scala:'scala',
+  // JS / TS family
+  js:'javascript', mjs:'javascript', cjs:'javascript', jsx:'javascript',
+  ts:'typescript', tsx:'typescript', mts:'typescript', cts:'typescript',
+  // Scripting / dynamic
+  py:'python', pyw:'python', rb:'ruby', rake:'ruby', gemspec:'ruby',
+  lua:'lua', pl:'perl', pm:'perl', r:'r', jl:'julia',
+  // Systems
+  rs:'rust', go:'go', c:'c', h:'c', cpp:'cpp', cc:'cpp', cxx:'cpp', hpp:'cpp', hxx:'cpp',
+  cs:'csharp', java:'java', kt:'kotlin', kts:'kotlin', scala:'scala', sc:'scala',
+  swift:'swift', m:'objective-c', mm:'objective-c',
+  dart:'dart', nim:'plaintext', zig:'plaintext',
+  ex:'elixir', exs:'elixir', erl:'erlang', hrl:'erlang',
+  hs:'plaintext', clj:'clojure', cljs:'clojure', cljc:'clojure',
+  fs:'fsharp', fsi:'fsharp', fsx:'fsharp',
+  // Shells / config
   sh:'shell', bash:'shell', zsh:'shell', fish:'shell',
-  ps1:'powershell', bat:'bat', cmd:'bat',
-  html:'html', htm:'html', xml:'xml', svg:'xml', vue:'html',
-  css:'css', scss:'scss', sass:'scss', less:'less',
-  json:'json', yaml:'yaml', yml:'yaml', toml:'ini', ini:'ini',
-  md:'markdown', mdx:'markdown', txt:'plaintext',
-  sql:'sql', graphql:'graphql', gql:'graphql',
-  dockerfile:'dockerfile', makefile:'makefile',
-  puml:'plaintext', plantuml:'plaintext',
+  ps1:'powershell', psm1:'powershell', psd1:'powershell',
+  bat:'bat', cmd:'bat',
+  // Web
+  html:'html', htm:'html', xhtml:'html', vue:'html', svelte:'html',
+  xml:'xml', svg:'xml', xsl:'xml', xsd:'xml', wsdl:'xml',
+  css:'css', scss:'scss', sass:'scss', less:'less', styl:'plaintext',
+  // Data
+  json:'json', json5:'json', jsonc:'json', map:'json',
+  yaml:'yaml', yml:'yaml',
+  toml:'ini', ini:'ini', cfg:'ini', conf:'ini', properties:'ini', env:'ini',
+  csv:'plaintext', tsv:'plaintext',
+  // Markup / docs
+  md:'markdown', mdx:'markdown', markdown:'markdown',
+  rst:'restructuredtext', tex:'plaintext', txt:'plaintext', log:'plaintext',
+  // Query / data
+  sql:'sql', mysql:'mysql', pgsql:'pgsql', plsql:'sql',
+  graphql:'graphql', gql:'graphql',
+  // PHP & friends
+  php:'php', phtml:'php', twig:'twig', blade:'php',
+  // Build / infra
+  dockerfile:'dockerfile', containerfile:'dockerfile',
+  makefile:'makefile', mk:'makefile',
+  tf:'hcl', tfvars:'hcl', hcl:'hcl', nomad:'hcl',
+  proto:'protobuf',
+  bicep:'bicep', sol:'sol',
+  // Hardware / scientific
+  v:'verilog', sv:'systemverilog', vhdl:'plaintext',
+  matlab:'plaintext',
+  // Templates
+  pug:'pug', jade:'pug', hbs:'handlebars', handlebars:'handlebars',
+  liquid:'liquid', razor:'razor', cshtml:'razor',
+  // Other
+  pas:'pascal', pp:'pascal',
+  tcl:'tcl',
+  vb:'vb', bas:'vb',
+  abap:'abap', apex:'apex', cls:'apex', trigger:'apex',
+  ahk:'plaintext',
+  wgsl:'wgsl', glsl:'plaintext', hlsl:'plaintext',
+  // PlantUML
+  puml:'plaintext', plantuml:'plaintext', iuml:'plaintext',
+  // Lockfiles / misc
+  lock:'plaintext', gitignore:'plaintext', editorconfig:'ini',
 };
 
 const LANG_LABEL = {
-  javascript:'JavaScript', typescript:'TypeScript', python:'Python', ruby:'Ruby',
-  rust:'Rust', go:'Go', java:'Java', csharp:'C#', cpp:'C++', c:'C', php:'PHP',
-  swift:'Swift', kotlin:'Kotlin', scala:'Scala', shell:'Shell',
-  powershell:'PowerShell', bat:'Batch', html:'HTML', xml:'XML', css:'CSS',
-  scss:'SCSS', less:'Less', json:'JSON', yaml:'YAML', ini:'INI',
-  markdown:'Markdown', plaintext:'Plain Text', sql:'SQL', graphql:'GraphQL',
-  dockerfile:'Dockerfile', makefile:'Makefile',
+  javascript:'JavaScript', typescript:'TypeScript',
+  python:'Python', ruby:'Ruby', lua:'Lua', perl:'Perl', r:'R', julia:'Julia',
+  rust:'Rust', go:'Go', c:'C', cpp:'C++', csharp:'C#', java:'Java',
+  kotlin:'Kotlin', scala:'Scala', swift:'Swift', 'objective-c':'Objective-C',
+  dart:'Dart', elixir:'Elixir', erlang:'Erlang', clojure:'Clojure', fsharp:'F#',
+  shell:'Shell', powershell:'PowerShell', bat:'Batch',
+  html:'HTML', xml:'XML', css:'CSS', scss:'SCSS', less:'Less',
+  json:'JSON', yaml:'YAML', ini:'INI / TOML',
+  markdown:'Markdown', plaintext:'Plain Text', restructuredtext:'reStructuredText',
+  sql:'SQL', mysql:'MySQL', pgsql:'PostgreSQL', graphql:'GraphQL',
+  php:'PHP', twig:'Twig',
+  dockerfile:'Dockerfile', makefile:'Makefile', hcl:'Terraform / HCL',
+  protobuf:'Protobuf', bicep:'Bicep', sol:'Solidity',
+  verilog:'Verilog', systemverilog:'SystemVerilog',
+  pug:'Pug', handlebars:'Handlebars', liquid:'Liquid', razor:'Razor',
+  pascal:'Pascal', tcl:'Tcl', vb:'Visual Basic',
+  abap:'ABAP', apex:'Apex', wgsl:'WGSL',
 };
+
+// Languages shown in the manual picker (status-bar dropdown). PlantUML maps to
+// plaintext because Monaco has no built-in tokenizer for it.
+const PICKER_LANGS = [
+  'plaintext','markdown','javascript','typescript','python','ruby','lua','perl','r','julia',
+  'rust','go','c','cpp','csharp','java','kotlin','scala','swift','objective-c',
+  'dart','elixir','erlang','clojure','fsharp',
+  'shell','powershell','bat',
+  'html','xml','css','scss','less',
+  'json','yaml','ini','restructuredtext',
+  'sql','mysql','pgsql','graphql',
+  'php','twig',
+  'dockerfile','makefile','hcl','protobuf','bicep','sol',
+  'verilog','systemverilog','pug','handlebars','liquid','razor',
+  'pascal','tcl','vb','abap','apex','wgsl',
+];
 
 function detectLang(name) {
   const lower = name.toLowerCase();
@@ -700,6 +847,66 @@ function toggleFilesPanel() {
   if (open) renderFilesList();
 }
 
+// ── Language picker ───────────────────────────────────────────────────────
+function setTabLanguage(tab, lang, userChose) {
+  if (!tab || !lang) return;
+  monaco.editor.setModelLanguage(tab.model, lang);
+  tab.language = lang;
+  if (userChose) tab.langOverride = true;
+  document.getElementById('status-lang').textContent = LANG_LABEL[lang] || lang;
+  if (previewOpen) schedulePreview();
+}
+
+let langPickerFocus = 0;
+let langPickerFiltered = [];
+
+function openLangPicker() {
+  const tab = tabs.find(t => t.id === activeId);
+  if (!tab) return;
+  document.getElementById('lang-picker-backdrop').classList.add('visible');
+  const input = document.getElementById('lang-picker-search');
+  input.value = '';
+  langPickerFocus = 0;
+  renderLangPicker('');
+  setTimeout(() => input.focus(), 0);
+}
+
+function closeLangPicker() {
+  document.getElementById('lang-picker-backdrop').classList.remove('visible');
+}
+
+function renderLangPicker(query) {
+  const tab = tabs.find(t => t.id === activeId);
+  const q = (query || '').toLowerCase().trim();
+  langPickerFiltered = PICKER_LANGS.filter(id => {
+    const label = (LANG_LABEL[id] || id).toLowerCase();
+    return !q || label.includes(q) || id.includes(q);
+  });
+  // Pin current language on top when no query
+  if (!q && tab && langPickerFiltered.includes(tab.language)) {
+    langPickerFiltered = [tab.language, ...langPickerFiltered.filter(x => x !== tab.language)];
+  }
+  if (langPickerFocus >= langPickerFiltered.length) langPickerFocus = 0;
+
+  const list = document.getElementById('lang-picker-list');
+  list.innerHTML = langPickerFiltered.map((id, i) => `
+    <div class="lang-picker-item${tab && id === tab.language ? ' current' : ''}${i === langPickerFocus ? ' focused' : ''}"
+         data-lang="${id}" role="option" aria-selected="${i === langPickerFocus}">
+      <span>${LANG_LABEL[id] || id}</span>
+      <span class="lang-id">${id}</span>
+    </div>`).join('');
+
+  const focused = list.querySelector('.lang-picker-item.focused');
+  focused?.scrollIntoView({ block: 'nearest' });
+}
+
+function langPickerSelect(id) {
+  const tab = tabs.find(t => t.id === activeId);
+  if (!tab || !id) return;
+  setTabLanguage(tab, id, true);
+  closeLangPicker();
+}
+
 function closeTab(id) {
   const tab = tabs.find(t => t.id === id);
   if (!tab) return;
@@ -768,11 +975,9 @@ const FileOps = {
     await w.close();
     tab.handle = handle;
     tab.name   = handle.name || tab.name;
-    const newLang = detectLang(tab.name);
-    if (newLang !== tab.language) {
-      monaco.editor.setModelLanguage(tab.model, newLang);
-      tab.language = newLang;
-      document.getElementById('status-lang').textContent = LANG_LABEL[newLang] || newLang;
+    if (!tab.langOverride) {
+      const newLang = detectLang(tab.name);
+      if (newLang !== tab.language) setTabLanguage(tab, newLang, false);
     }
     markDirty(tab.id, false);
     renderTabs();
@@ -989,6 +1194,26 @@ function wireEvents() {
     if (item) setActive(item.dataset.id);
   });
 
+  // Language picker
+  document.getElementById('status-lang').onclick = openLangPicker;
+  document.getElementById('lang-picker-backdrop').addEventListener('click', e => {
+    if (e.target.id === 'lang-picker-backdrop') closeLangPicker();
+  });
+  document.getElementById('lang-picker-search').addEventListener('input', e => {
+    langPickerFocus = 0;
+    renderLangPicker(e.target.value);
+  });
+  document.getElementById('lang-picker-search').addEventListener('keydown', e => {
+    if (e.key === 'Escape')      { e.preventDefault(); closeLangPicker(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); langPickerFocus = Math.min(langPickerFocus + 1, langPickerFiltered.length - 1); renderLangPicker(e.target.value); }
+    else if (e.key === 'ArrowUp')   { e.preventDefault(); langPickerFocus = Math.max(langPickerFocus - 1, 0); renderLangPicker(e.target.value); }
+    else if (e.key === 'Enter')     { e.preventDefault(); langPickerSelect(langPickerFiltered[langPickerFocus]); }
+  });
+  document.getElementById('lang-picker-list').addEventListener('click', e => {
+    const item = e.target.closest('.lang-picker-item');
+    if (item) langPickerSelect(item.dataset.lang);
+  });
+
   const tabsEl = document.getElementById('tabs-scroll');
 
   // Left-click: close button or switch tab
@@ -1035,17 +1260,107 @@ require(['vs/editor/editor.main'], function () {
     base: 'vs-dark',
     inherit: true,
     rules: [
-      { token: '',           foreground: 'D9D9D9', background: '242424' },
-      { token: 'comment',    foreground: '9D9D9D', fontStyle: 'italic'  },
-      { token: 'keyword',    foreground: '2DAAE4'                        },
-      { token: 'string',     foreground: '8bc34a'                        },
-      { token: 'number',     foreground: 'f7df1e'                        },
-      { token: 'type',       foreground: 'C16D51'                        },
-      { token: 'variable',   foreground: 'D9D9D9'                        },
-      { token: 'function',   foreground: '2DAAE4'                        },
-      { token: 'operator',   foreground: 'B2B2B2'                        },
-      { token: 'delimiter',  foreground: '9D9D9D'                        },
-      { token: 'annotation', foreground: 'C16D51'                        },
+      // ── Base ──
+      { token: '',                   foreground: 'D9D9D9', background: '242424' },
+      { token: 'comment',            foreground: '9D9D9D', fontStyle: 'italic' },
+      { token: 'comment.doc',        foreground: 'B2B2B2', fontStyle: 'italic' },
+
+      // ── Generic code tokens ──
+      { token: 'keyword',            foreground: '2DAAE4', fontStyle: 'bold'   },
+      { token: 'keyword.flow',       foreground: 'D484CB', fontStyle: 'bold'   },
+      { token: 'keyword.json',       foreground: '2DAAE4'                       },
+      { token: 'string',             foreground: '8BC34A'                       },
+      { token: 'string.escape',      foreground: 'C16D51'                       },
+      { token: 'string.invalid',     foreground: 'FF014F'                       },
+      { token: 'string.key.json',    foreground: 'C16D51'                       },
+      { token: 'string.value.json',  foreground: '8BC34A'                       },
+      { token: 'number',             foreground: 'F7DF1E'                       },
+      { token: 'number.hex',         foreground: 'F7DF1E'                       },
+      { token: 'number.float',       foreground: 'F7DF1E'                       },
+      { token: 'regexp',             foreground: 'E38C00'                       },
+      { token: 'constant',           foreground: 'F7DF1E', fontStyle: 'bold'   },
+
+      { token: 'type',               foreground: 'C16D51', fontStyle: 'italic' },
+      { token: 'type.identifier',    foreground: 'C16D51'                       },
+      { token: 'class',              foreground: 'C16D51', fontStyle: 'bold'   },
+      { token: 'interface',          foreground: 'C16D51', fontStyle: 'italic' },
+      { token: 'enum',               foreground: 'C16D51'                       },
+      { token: 'namespace',          foreground: 'C4C4C4'                       },
+
+      { token: 'variable',           foreground: 'D9D9D9'                       },
+      { token: 'variable.predefined',foreground: 'D484CB'                       },
+      { token: 'variable.parameter', foreground: 'D9D9D9', fontStyle: 'italic' },
+      { token: 'parameter',          foreground: 'D9D9D9', fontStyle: 'italic' },
+      { token: 'identifier',         foreground: 'D9D9D9'                       },
+
+      { token: 'function',           foreground: '2DAAE4'                       },
+      { token: 'function.declaration', foreground: '2DAAE4', fontStyle: 'bold' },
+      { token: 'method',             foreground: '2DAAE4'                       },
+
+      { token: 'operator',           foreground: 'B2B2B2'                       },
+      { token: 'delimiter',          foreground: '9D9D9D'                       },
+      { token: 'delimiter.bracket',  foreground: 'C4C4C4'                       },
+      { token: 'delimiter.parenthesis', foreground: 'C4C4C4'                    },
+      { token: 'delimiter.square',   foreground: 'C4C4C4'                       },
+
+      { token: 'annotation',         foreground: 'C16D51', fontStyle: 'italic' },
+      { token: 'attribute.name',     foreground: 'C16D51'                       },
+      { token: 'attribute.value',    foreground: '8BC34A'                       },
+
+      // ── Markdown ──
+      { token: 'keyword.md',         foreground: '2DAAE4', fontStyle: 'bold'   },
+      { token: 'string.link.md',     foreground: '2DAAE4', fontStyle: 'underline' },
+      { token: 'string.target.md',   foreground: '8BC34A'                       },
+      { token: 'string.md',          foreground: '8BC34A'                       },
+      { token: 'variable.md',        foreground: 'C16D51'                       },
+      { token: 'variable.source.md', foreground: 'D9D9D9', background: '1A1A1A' },
+      { token: 'emphasis',           foreground: 'D484CB', fontStyle: 'italic' },
+      { token: 'strong',             foreground: '2DAAE4', fontStyle: 'bold'   },
+      { token: 'tag.md',             foreground: '9D9D9D'                       },
+
+      // ── HTML / XML ──
+      { token: 'tag',                foreground: '2DAAE4'                       },
+      { token: 'tag.html',           foreground: '2DAAE4'                       },
+      { token: 'tag.xml',            foreground: '2DAAE4'                       },
+      { token: 'metatag',            foreground: 'D484CB'                       },
+      { token: 'metatag.content.html', foreground: '8BC34A'                     },
+      { token: 'attribute.name.html',foreground: 'C16D51'                       },
+      { token: 'attribute.value.html', foreground: '8BC34A'                     },
+
+      // ── CSS / SCSS ──
+      { token: 'tag.css',            foreground: '2DAAE4'                       },
+      { token: 'attribute.name.css', foreground: 'C16D51'                       },
+      { token: 'attribute.value.css',foreground: '8BC34A'                       },
+      { token: 'attribute.value.number.css', foreground: 'F7DF1E'               },
+      { token: 'attribute.value.unit.css', foreground: 'F7DF1E'                 },
+      { token: 'attribute.value.hex.css', foreground: 'F7DF1E'                  },
+      { token: 'keyword.css',        foreground: 'D484CB'                       },
+      { token: 'pseudo.css',         foreground: 'C16D51', fontStyle: 'italic' },
+
+      // ── YAML / INI / TOML ──
+      { token: 'type.yaml',          foreground: 'C16D51'                       },
+      { token: 'string.yaml',        foreground: '8BC34A'                       },
+      { token: 'number.yaml',        foreground: 'F7DF1E'                       },
+      { token: 'key',                foreground: 'C16D51'                       },
+      { token: 'key.ini',            foreground: 'C16D51'                       },
+
+      // ── SQL ──
+      { token: 'keyword.sql',        foreground: '2DAAE4', fontStyle: 'bold'   },
+      { token: 'operator.sql',       foreground: 'D484CB'                       },
+      { token: 'predefined.sql',     foreground: 'C16D51'                       },
+
+      // ── Shell ──
+      { token: 'variable.shell',     foreground: 'C16D51'                       },
+      { token: 'metatag.shell',      foreground: 'D484CB'                       },
+
+      // ── Python ──
+      { token: 'predefined.python',  foreground: 'D484CB'                       },
+
+      // ── JSON ──
+      { token: 'comment.json',       foreground: '9D9D9D', fontStyle: 'italic' },
+
+      // ── Diagnostics / generic ──
+      { token: 'invalid',            foreground: 'FF014F', fontStyle: 'bold'   },
     ],
     colors: {
       'editor.background':                    '#242424',
