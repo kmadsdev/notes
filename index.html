@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>notes</title>
+
+<!-- Monego font (Monaspace-based) -->
+<style>
+@font-face {
+  font-family: 'Monego';
+  src: url('https://cdn.jsdelivr.net/gh/cseelus/monego@main/Monego/Monego-Regular.otf') format('opentype');
+  font-weight: 400; font-style: normal;
+}
+@font-face {
+  font-family: 'Monego';
+  src: url('https://cdn.jsdelivr.net/gh/cseelus/monego@main/Monego/Monego-Bold.otf') format('opentype');
+  font-weight: 700; font-style: normal;
+}
+@font-face {
+  font-family: 'Monego';
+  src: url('https://cdn.jsdelivr.net/gh/cseelus/monego@main/Monego/Monego-Italic.otf') format('opentype');
+  font-weight: 400; font-style: italic;
+}
+@font-face {
+  font-family: 'Monego';
+  src: url('https://cdn.jsdelivr.net/gh/cseelus/monego@main/Monego/Monego-BoldItalic.otf') format('opentype');
+  font-weight: 700; font-style: italic;
+}
+</style>
+
+<!-- JetBrains Mono fallback -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap">
+
+<!-- Monaco Editor AMD loader -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js"></script>
+
+<!-- Pako: deflate for PlantUML encoding -->
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+
+<style>
+/* ── Reset ───────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button { font-family: inherit; }
+
+/* ── Palette ─────────────────────────────────────────────────────────── */
+:root {
+  --bg:              #101010;
+  --surface:         #242424;
+  --border:          #505050;
+  --tab-inactive:    #515151;
+  --tab-hover:       #565656;
+  --text-4:          #9D9D9D;
+  --text-3:          #B2B2B2;
+  --text-2:          #C4C4C4;
+  --text-1:          #D9D9D9;
+  --accent-blue:     #2DAAE4;
+  --accent-rust:     #C16D51;
+  --accent-danger:   #FF014F;
+}
+
+/* ── App shell ───────────────────────────────────────────────────────── */
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: var(--surface);
+  color: var(--text-2);
+  font-family: 'Monego', 'JetBrains Mono', 'Cascadia Code', monospace;
+  font-size: 13px;
+}
+
+#app {
+  display: grid;
+  grid-template-rows: 50px 1fr 31px;
+  height: 100vh;
+}
+
+/* ── Title bar ───────────────────────────────────────────────────────── */
+#titlebar {
+  grid-row: 1;
+  display: flex;
+  align-items: stretch;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+#branding {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  width: 284px;
+  color: var(--text-1);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: var(--bg);
+}
+
+#branding-mark {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--accent-blue);
+}
+
+#branding-text {
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────────── */
+#tabs-scroll {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  min-width: 0;
+}
+#tabs-scroll::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 0 18px;
+  min-width: 140px;
+  max-width: 402px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg);
+  color: var(--text-4);
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s;
+  position: relative;
+}
+
+.tab::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: transparent;
+  transition: background 0.1s;
+}
+
+.tab:hover { background: var(--tab-hover); color: var(--text-2); }
+
+.tab.active {
+  background: var(--surface);
+  color: var(--text-1);
+}
+.tab.active::before { background: var(--accent-danger); }
+
+.tab-icon {
+  width: 17px;
+  height: 19px;
+  flex-shrink: 0;
+}
+
+.tab-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+.tab-dirty {
+  color: var(--accent-blue);
+  font-size: 8px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.tab-close {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  flex-shrink: 0;
+  opacity: 0;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--text-4);
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.1s, background 0.1s;
+}
+
+.tab:hover .tab-close,
+.tab.active .tab-close { opacity: 1; }
+.tab-close:hover { background: var(--border); color: var(--text-1); }
+
+/* ── Title bar action buttons ────────────────────────────────────────── */
+#titlebar-actions {
+  display: flex;
+  align-items: center;
+  padding: 0 10px 0 8px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.tb-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: none;
+  background: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.1s, color 0.1s;
+}
+.tb-btn:hover { background: var(--border); color: var(--text-1); }
+.tb-btn.active { color: var(--accent-blue); }
+.tb-btn title { display: none; }
+
+/* Split-screen toggle button — matches prototype's top-right rounded square */
+#btn-split {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid #CFCFCF;
+  background: none;
+  color: #CFCFCF;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  transition: border-color 0.1s, color 0.1s;
+}
+#btn-split::after {
+  content: '';
+  position: absolute;
+  top: -2px; bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background: #CFCFCF;
+}
+#btn-split:hover { border-color: var(--text-1); color: var(--text-1); }
+#btn-split:hover::after { background: var(--text-1); }
+#btn-split.active { border-color: var(--accent-blue); color: var(--accent-blue); }
+#btn-split.active::after { background: var(--accent-blue); }
+
+/* ── Main area ───────────────────────────────────────────────────────── */
+#main {
+  grid-row: 2;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── Activity bar ────────────────────────────────────────────────────── */
+#activity-bar {
+  width: 60px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  gap: 2px;
+}
+
+.ab-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: var(--text-4);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.1s, color 0.1s;
+}
+.ab-btn:hover { background: var(--border); color: var(--text-2); }
+.ab-btn.active { color: var(--text-1); }
+
+/* ── Files panel (sidebar) ───────────────────────────────────────────── */
+#files-panel {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+#files-panel.visible { display: flex; }
+
+#files-panel-header {
+  padding: 12px 16px 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  user-select: none;
+}
+
+#files-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+
+.files-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 16px;
+  cursor: pointer;
+  color: var(--text-3);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.files-item:hover { background: var(--tab-hover); color: var(--text-1); }
+.files-item.active { background: var(--bg); color: var(--text-1); }
+.files-item .files-name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.files-item .tab-icon { width: 14px; height: 14px; }
+.files-item .files-dot { color: var(--accent-blue); font-size: 8px; }
+
+/* ── Editor wrap ─────────────────────────────────────────────────────── */
+#editor-wrap {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+}
+
+#editor-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Preview pane ────────────────────────────────────────────────────── */
+#preview-pane {
+  flex: 1;
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+  display: none;
+}
+#preview-pane.visible { display: flex; flex-direction: column; }
+
+#preview-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: var(--surface);
+}
+
+/* ── Status bar ──────────────────────────────────────────────────────── */
+#statusbar-wrap {
+  grid-row: 3;
+  display: flex;
+  align-items: stretch;
+  padding: 0 4px 4px 60px;
+  background: var(--surface);
+  gap: 0;
+}
+
+#statusbar-scrollthumb {
+  width: 2px;
+  height: 25px;
+  border-radius: 1px;
+  background: var(--text-4);
+  margin: -2px 0 0 -2px;
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+#statusbar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 2px solid #404040;
+  border-radius: 1.5px;
+  color: var(--text-3);
+  font-size: 11px;
+  user-select: none;
+  height: 23px;
+}
+
+#status-left, #status-right { display: flex; gap: 16px; align-items: center; }
+
+.status-item { display: flex; align-items: center; gap: 5px; }
+
+#status-save { color: var(--accent-blue); transition: color 0.2s; }
+
+/* ── Responsive: tablet 640–1023px ──────────────────────────────────── */
+@media (max-width: 1023px) {
+  #activity-bar { width: 48px; }
+  .ab-btn { width: 32px; height: 32px; }
+  #branding { width: 180px; padding: 0 14px; font-size: 12px; }
+  .tab { min-width: 110px; max-width: 280px; padding: 0 10px 0 14px; }
+  .tab-label { max-width: 180px; font-size: 12px; }
+  #files-panel { width: 200px; }
+  #statusbar-wrap { padding-left: 48px; }
+}
+
+/* ── Responsive: mobile < 640px ─────────────────────────────────────── */
+@media (max-width: 639px) {
+  #app { grid-template-rows: 44px 1fr 27px; }
+  #titlebar { height: 44px; }
+  #activity-bar { display: none; }
+  #branding { display: none; }
+  #btn-split { display: none; }
+  #files-panel { display: none !important; }
+  .tab { min-width: 44px; height: 44px; padding: 0 10px; max-width: 220px; }
+  #editor-wrap { flex-direction: column; }
+  #preview-pane { border-left: none; border-top: 1px solid var(--border); }
+  #statusbar-wrap { padding: 0 4px 4px 4px; }
+  #statusbar-scrollthumb { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── Title bar ─────────────────────────────────────────────── -->
+  <div id="titlebar">
+    <div id="branding">
+      <svg id="branding-mark" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 2h8l4 4v10H3V2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <path d="M11 2v4h4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <path d="M6 9h6M6 11.5h6M6 14h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span id="branding-text">notes</span>
+    </div>
+
+    <div id="tabs-scroll" role="tablist" aria-label="Open files"></div>
+
+    <div id="titlebar-actions">
+      <button class="tb-btn" id="btn-new" title="New file (Ctrl+N)" aria-label="New file">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3.5 2h6L13 5.5V14h-9.5V2z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <path d="M9.5 2v3.5H13" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <path d="M6.5 9.5h3M8 8v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="tb-btn" id="btn-open" title="Open file (Ctrl+O)" aria-label="Open file">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 5h5l1.5 1.5H14V13H2V5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        </svg>
+      </button>
+      <button class="tb-btn" id="btn-save" title="Save (Ctrl+S)" aria-label="Save">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 2h7.5L14 5.5V14H3V2z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <rect x="5" y="9" width="6" height="4" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <rect x="5" y="2" width="5" height="3" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        </svg>
+      </button>
+      <button class="tb-btn" id="btn-download" title="Download file" aria-label="Download">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2v8M5 7.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 13h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="tb-btn" id="btn-preview" title="Toggle preview (Ctrl+Shift+P)" aria-label="Toggle preview">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <path d="M8 3v10" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M4 6h2M4 8.5h2M4 11h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="11" cy="8.5" r="1.8" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        </svg>
+      </button>
+      <button id="btn-split" title="Split editor (Ctrl+\\)" aria-label="Split editor"></button>
+    </div>
+  </div>
+
+  <!-- ── Main ──────────────────────────────────────────────────── -->
+  <div id="main">
+
+    <!-- Activity bar -->
+    <div id="activity-bar">
+      <button class="ab-btn" id="ab-files" title="Open editors (toggle panel)" aria-label="Open editors">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4 3.5h6l2 2h4v11H4V3.5z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+        </svg>
+      </button>
+      <button class="ab-btn" id="ab-search" title="Find in editor" aria-label="Search">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.3" fill="none"/>
+          <path d="M13 13l3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Files panel (toggleable) -->
+    <aside id="files-panel" aria-label="Open files">
+      <div id="files-panel-header">Open Editors</div>
+      <div id="files-list" role="listbox"></div>
+    </aside>
+
+    <!-- Editor + preview -->
+    <div id="editor-wrap">
+      <div id="editor-container"></div>
+      <div id="preview-pane">
+        <!-- allow-scripts needed for Redoc/marked in srcdoc; allow-same-origin for pako -->
+        <iframe id="preview-frame" sandbox="allow-scripts"></iframe>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Status bar (wrapped to leave room for scrollbar thumb) ──── -->
+  <div id="statusbar-wrap">
+    <div id="statusbar-scrollthumb" aria-hidden="true"></div>
+    <div id="statusbar">
+      <div id="status-left">
+        <span class="status-item" id="status-handle" title="File sync status"></span>
+        <span class="status-item" id="status-lang">Plain Text</span>
+      </div>
+      <div id="status-right">
+        <span class="status-item" id="status-encoding">UTF-8</span>
+        <span class="status-item" id="status-pos">Ln 1, Col 1</span>
+        <span class="status-item" id="status-save"></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Fallback file input for Firefox/Safari -->
+<input type="file" id="file-input" multiple hidden>
+
+<script>
+'use strict';
+
+// ── State ──────────────────────────────────────────────────────────────────
+let tabs        = [];
+let activeId    = null;
+let editor      = null;
+let previewOpen = false;
+let untitledN   = 0;
+let saveTmr     = null;
+let prevTmr     = null;
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
+    const s = Object.assign(document.createElement('script'), { src, onload: res, onerror: rej });
+    document.head.appendChild(s);
+  });
+}
+
+// ── Language detection ─────────────────────────────────────────────────────
+const EXT_LANG = {
+  js:'javascript', mjs:'javascript', cjs:'javascript',
+  ts:'typescript', jsx:'javascript', tsx:'typescript',
+  py:'python', rb:'ruby', rs:'rust', go:'go',
+  java:'java', cs:'csharp', cpp:'cpp', cc:'cpp', c:'c', h:'c', hpp:'cpp',
+  php:'php', swift:'swift', kt:'kotlin', scala:'scala',
+  sh:'shell', bash:'shell', zsh:'shell', fish:'shell',
+  ps1:'powershell', bat:'bat', cmd:'bat',
+  html:'html', htm:'html', xml:'xml', svg:'xml', vue:'html',
+  css:'css', scss:'scss', sass:'scss', less:'less',
+  json:'json', yaml:'yaml', yml:'yaml', toml:'ini', ini:'ini',
+  md:'markdown', mdx:'markdown', txt:'plaintext',
+  sql:'sql', graphql:'graphql', gql:'graphql',
+  dockerfile:'dockerfile', makefile:'makefile',
+  puml:'plaintext', plantuml:'plaintext',
+};
+
+const LANG_LABEL = {
+  javascript:'JavaScript', typescript:'TypeScript', python:'Python', ruby:'Ruby',
+  rust:'Rust', go:'Go', java:'Java', csharp:'C#', cpp:'C++', c:'C', php:'PHP',
+  swift:'Swift', kotlin:'Kotlin', scala:'Scala', shell:'Shell',
+  powershell:'PowerShell', bat:'Batch', html:'HTML', xml:'XML', css:'CSS',
+  scss:'SCSS', less:'Less', json:'JSON', yaml:'YAML', ini:'INI',
+  markdown:'Markdown', plaintext:'Plain Text', sql:'SQL', graphql:'GraphQL',
+  dockerfile:'Dockerfile', makefile:'Makefile',
+};
+
+function detectLang(name) {
+  const lower = name.toLowerCase();
+  if (lower === 'dockerfile') return 'dockerfile';
+  if (lower === 'makefile')   return 'makefile';
+  const ext = lower.split('.').pop();
+  return EXT_LANG[ext] || 'plaintext';
+}
+
+// ── File-type icon (inline SVG, color-coded by extension) ──────────────────
+const EXT_COLOR = {
+  js:'#f7df1e', mjs:'#f7df1e', ts:'#3178c6', jsx:'#61dafb', tsx:'#61dafb',
+  py:'#3572A5', rs:'#dea584', go:'#00acd7', java:'#b07219', cs:'#68217a',
+  cpp:'#00599C', c:'#555555', rb:'#CC342D', php:'#4F5D95', swift:'#FA7343',
+  kt:'#A97BFF', html:'#e34c26', css:'#563d7c', scss:'#cc6699',
+  json:'#8bc34a', yaml:'#cb171e', yml:'#cb171e', md:'#083fa1', mdx:'#083fa1',
+  sql:'#e38c00', sh:'#89e051', bash:'#89e051',
+  puml:'#C16D51', plantuml:'#C16D51',
+};
+
+function fileIcon(name) {
+  const ext = name.toLowerCase().split('.').pop();
+  const color = EXT_COLOR[ext] || '#9d9d9d';
+  return `<svg class="tab-icon" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2.5 1h6L11 3.5V13h-8.5V1z" stroke="${color}" stroke-width="1" fill="none"/>
+    <path d="M8.5 1v2.5H11" stroke="${color}" stroke-width="1" fill="none"/>
+  </svg>`;
+}
+
+// ── Tab rendering ──────────────────────────────────────────────────────────
+function renderTabs() {
+  const el = document.getElementById('tabs-scroll');
+  el.innerHTML = tabs.map(t => `
+    <div class="tab${t.id === activeId ? ' active' : ''}" data-id="${t.id}"
+         role="tab" aria-selected="${t.id === activeId}" tabindex="0" title="${esc(t.name)}">
+      ${fileIcon(t.name)}
+      <span class="tab-label">${esc(t.name)}</span>
+      ${t.dirty ? '<span class="tab-dirty" title="Unsaved changes">⬤</span>' : ''}
+      <button class="tab-close" data-id="${t.id}" title="Close (Ctrl+W)" aria-label="Close ${esc(t.name)}">×</button>
+    </div>`).join('');
+
+  el.querySelector('.tab.active')?.scrollIntoView({ block:'nearest', inline:'nearest' });
+}
+
+// ── Tab management ─────────────────────────────────────────────────────────
+function addTab(name, content, handle) {
+  const id  = 'tab-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+  const lang = detectLang(name);
+  const model = monaco.editor.createModel(content, lang);
+  const tab   = { id, name, content, handle, dirty: false, language: lang, model };
+  tabs.push(tab);
+  setActive(id);
+  return tab;
+}
+
+function setActive(id) {
+  activeId = id;
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+  editor.setModel(tab.model);
+  renderTabs();
+  renderFilesList();
+  document.getElementById('status-lang').textContent = LANG_LABEL[tab.language] || tab.language;
+  updateSyncIndicator(tab);
+  if (previewOpen) schedulePreview();
+}
+
+function updateSyncIndicator(tab) {
+  const el = document.getElementById('status-handle');
+  if (!el) return;
+  if (tab.handle) {
+    el.innerHTML = `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="color:var(--accent-blue)"><path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Synced`;
+    el.title = 'Autosave is active — edits write back to disk';
+  } else {
+    el.innerHTML = `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="color:var(--accent-rust)"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M8 5v3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11" r="0.6" fill="currentColor"/></svg>Unsynced`;
+    el.title = 'No file handle — use Save (Ctrl+S) to bind to a file';
+  }
+}
+
+function renderFilesList() {
+  const list = document.getElementById('files-list');
+  if (!list) return;
+  list.innerHTML = tabs.map(t => `
+    <div class="files-item${t.id === activeId ? ' active' : ''}" data-id="${t.id}" role="option" aria-selected="${t.id === activeId}">
+      ${fileIcon(t.name)}
+      <span class="files-name" title="${esc(t.name)}">${esc(t.name)}</span>
+      ${t.dirty ? '<span class="files-dot" title="Unsaved">⬤</span>' : ''}
+    </div>`).join('');
+}
+
+function toggleFilesPanel() {
+  const panel = document.getElementById('files-panel');
+  const btn   = document.getElementById('ab-files');
+  const open  = panel.classList.toggle('visible');
+  btn.classList.toggle('active', open);
+  if (open) renderFilesList();
+}
+
+function closeTab(id) {
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+  if (tab.dirty && !confirm(`"${tab.name}" has unsaved changes. Close anyway?`)) return;
+  const idx = tabs.indexOf(tab);
+  tab.model.dispose();
+  tabs.splice(idx, 1);
+  if (tabs.length === 0) { addTab(`Untitled-${++untitledN}`, '', null); return; }
+  if (activeId === id) setActive(tabs[Math.min(idx, tabs.length - 1)].id);
+  else renderTabs();
+}
+
+function markDirty(id, dirty) {
+  const tab = tabs.find(t => t.id === id);
+  if (!tab || tab.dirty === dirty) return;
+  tab.dirty = dirty;
+  renderTabs();
+  renderFilesList();
+}
+
+// ── File operations ────────────────────────────────────────────────────────
+const FileOps = {
+  newFile() {
+    addTab(`Untitled-${++untitledN}`, '', null);
+  },
+
+  async openFile() {
+    if (window.showOpenFilePicker) {
+      let handles;
+      try { handles = await window.showOpenFilePicker({ multiple: true }); }
+      catch (e) { if (e.name !== 'AbortError') console.error(e); return; }
+      for (const h of handles) {
+        const f = await h.getFile();
+        addTab(f.name, await f.text(), h);
+      }
+    } else {
+      document.getElementById('file-input').click();
+    }
+  },
+
+  async saveFile(tab) {
+    tab = tab || tabs.find(t => t.id === activeId);
+    if (!tab) return;
+    if (tab.handle) {
+      try {
+        const w = await tab.handle.createWritable();
+        await w.write(tab.model.getValue());
+        await w.close();
+        markDirty(tab.id, false);
+        flashSaved();
+      } catch (e) { console.error('Save error', e); }
+    } else {
+      await FileOps.saveAs(tab);
+    }
+  },
+
+  async saveAs(tab) {
+    tab = tab || tabs.find(t => t.id === activeId);
+    if (!tab) return;
+    if (!window.showSaveFilePicker) { FileOps.download(tab); return; }
+    let handle;
+    try { handle = await window.showSaveFilePicker({ suggestedName: tab.name }); }
+    catch (e) { if (e.name !== 'AbortError') console.error(e); return; }
+    const w = await handle.createWritable();
+    await w.write(tab.model.getValue());
+    await w.close();
+    tab.handle = handle;
+    tab.name   = handle.name || tab.name;
+    const newLang = detectLang(tab.name);
+    if (newLang !== tab.language) {
+      monaco.editor.setModelLanguage(tab.model, newLang);
+      tab.language = newLang;
+      document.getElementById('status-lang').textContent = LANG_LABEL[newLang] || newLang;
+    }
+    markDirty(tab.id, false);
+    renderTabs();
+    renderFilesList();
+    updateSyncIndicator(tab);
+    flashSaved();
+  },
+
+  download(tab) {
+    tab = tab || tabs.find(t => t.id === activeId);
+    if (!tab) return;
+    const url = URL.createObjectURL(new Blob([tab.model.getValue()], { type: 'text/plain' }));
+    Object.assign(document.createElement('a'), { href: url, download: tab.name }).click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  },
+};
+
+function flashSaved() {
+  const el = document.getElementById('status-save');
+  el.textContent = '✓ Saved';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.textContent = ''; }, 2500);
+}
+
+// ── Autosave ───────────────────────────────────────────────────────────────
+function scheduleAutosave(tab) {
+  clearTimeout(saveTmr);
+  if (tab?.handle) saveTmr = setTimeout(() => FileOps.saveFile(tab), 1000);
+}
+
+// ── Preview ────────────────────────────────────────────────────────────────
+function togglePreview() {
+  previewOpen = !previewOpen;
+  document.getElementById('preview-pane').classList.toggle('visible', previewOpen);
+  document.getElementById('btn-preview').classList.toggle('active', previewOpen);
+  document.getElementById('btn-split').classList.toggle('active', previewOpen);
+  if (previewOpen) buildPreview();
+  else document.getElementById('preview-frame').removeAttribute('srcdoc');
+}
+
+function schedulePreview() {
+  clearTimeout(prevTmr);
+  prevTmr = setTimeout(buildPreview, 500);
+}
+
+const PREVIEW_CSS = `
+  <style>
+    :root{color-scheme:dark}
+    body{background:#242424;color:#d9d9d9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+         font-size:14px;line-height:1.65;padding:24px;margin:0;word-break:break-word}
+    pre{background:#101010;padding:14px;border-radius:5px;overflow-x:auto;margin:12px 0}
+    code{font-family:'JetBrains Mono',monospace;font-size:13px}
+    a{color:#2DAAE4;text-underline-offset:3px}
+    blockquote{border-left:3px solid #505050;padding-left:14px;margin-left:0;color:#9d9d9d}
+    table{border-collapse:collapse;width:100%;margin:12px 0}
+    th,td{border:1px solid #505050;padding:8px 12px;text-align:left}
+    th{background:#101010;color:#d9d9d9}
+    img{max-width:100%}
+    h1,h2,h3,h4{color:#d9d9d9;margin:20px 0 8px}
+    h1{border-bottom:1px solid #505050;padding-bottom:8px}
+    hr{border:none;border-top:1px solid #505050;margin:20px 0}
+    .key{color:#C16D51}.str{color:#8bc34a}.num{color:#f7df1e}.bool{color:#2DAAE4}.null{color:#9d9d9d}
+    details{margin:2px 0}details[open]{margin-bottom:4px}
+    summary{cursor:pointer;color:#2DAAE4;list-style:none;padding:2px 4px;border-radius:3px}
+    summary:hover{background:#2DAAE420}summary::marker,summary::-webkit-details-marker{display:none}
+  </style>`;
+
+async function buildPreview() {
+  if (!previewOpen) return;
+  const tab = tabs.find(t => t.id === activeId);
+  if (!tab) return;
+  const content = tab.model.getValue();
+  const ext     = tab.name.toLowerCase().split('.').pop();
+  let html = '';
+
+  // ── Markdown ──
+  if (ext === 'md' || ext === 'mdx') {
+    await loadScript('https://cdn.jsdelivr.net/npm/marked@12/marked.min.js');
+    html = `<!DOCTYPE html><html><head>${PREVIEW_CSS}</head><body>${marked.parse(content)}</body></html>`;
+
+  // ── YAML (non-OpenAPI) ──
+  } else if ((ext === 'yaml' || ext === 'yml') && !/^openapi:/m.test(content)) {
+    await loadScript('https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js');
+    let parsed;
+    try { parsed = jsyaml.load(content); } catch(e) { parsed = { error: e.message }; }
+    html = `<!DOCTYPE html><html><head>${PREVIEW_CSS}</head><body>${jsonTree(parsed)}</body></html>`;
+
+  // ── OpenAPI (YAML or JSON with openapi key) ──
+  } else if (
+    (ext === 'yaml' || ext === 'yml') && /^openapi:/m.test(content) ||
+    ext === 'json' && /"openapi"\s*:/.test(content)
+  ) {
+    const specStr = JSON.stringify(content);
+    const isYaml  = ext === 'yaml' || ext === 'yml';
+    const parser  = isYaml
+      ? `<script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"><\/script>`
+      : '';
+    const parse   = isYaml
+      ? `const spec = jsyaml.load(raw);`
+      : `const spec = JSON.parse(raw);`;
+    html = `<!DOCTYPE html><html><head>
+      ${parser}
+      <script src="https://cdn.jsdelivr.net/npm/redoc@latest/bundles/redoc.standalone.js"><\/script>
+      <style>body{margin:0}</style>
+      </head><body>
+      <div id="rd"></div>
+      <script>
+        const raw = ${specStr};
+        let spec;
+        try { ${parse} } catch(e) { spec = {}; }
+        Redoc.init(spec, {theme:{colors:{primary:{main:'#2DAAE4'}}}}, document.getElementById('rd'));
+      <\/script>
+      </body></html>`;
+
+  // ── Plain JSON ──
+  } else if (ext === 'json') {
+    let parsed;
+    try { parsed = JSON.parse(content); } catch(e) { parsed = { error: e.message }; }
+    html = `<!DOCTYPE html><html><head>${PREVIEW_CSS}</head><body>${jsonTree(parsed)}</body></html>`;
+
+  // ── PlantUML ──
+  } else if (ext === 'puml' || ext === 'plantuml') {
+    const encoded = encodePlantUML(content);
+    html = `<!DOCTYPE html><html><head>${PREVIEW_CSS}</head>
+      <body style="display:flex;justify-content:center;padding:20px">
+        <img src="https://www.plantuml.com/plantuml/svg/${encoded}" style="max-width:100%" alt="diagram">
+      </body></html>`;
+
+  // ── Fallback: raw text ──
+  } else {
+    html = `<!DOCTYPE html><html><head>${PREVIEW_CSS}</head><body><pre><code>${esc(content)}</code></pre></body></html>`;
+  }
+
+  document.getElementById('preview-frame').srcdoc = html;
+}
+
+// Recursive JSON tree renderer
+function jsonTree(val, depth) {
+  depth = depth || 0;
+  if (val === null)              return '<span class="null">null</span>';
+  if (typeof val === 'boolean')  return `<span class="bool">${val}</span>`;
+  if (typeof val === 'number')   return `<span class="num">${val}</span>`;
+  if (typeof val === 'string')   return `<span class="str">"${esc(val)}"</span>`;
+  if (Array.isArray(val)) {
+    if (!val.length) return '<span class="null">[]</span>';
+    const items = val.map((v,i) => `<div style="margin-left:18px">${i}: ${jsonTree(v,depth+1)}</div>`).join('');
+    return `<details${depth<2?' open':''}><summary>[${val.length} items]</summary>${items}</details>`;
+  }
+  const keys = Object.keys(val);
+  if (!keys.length) return '<span class="null">{}</span>';
+  const items = keys.map(k =>
+    `<div style="margin-left:18px"><span class="key">"${esc(k)}"</span>: ${jsonTree(val[k],depth+1)}</div>`
+  ).join('');
+  return `<details${depth<2?' open':''}><summary>{${keys.length} keys}</summary>${items}</details>`;
+}
+
+// PlantUML deflate+base64url encode (custom alphabet)
+function encodePlantUML(src) {
+  const compressed = pako.deflate(new TextEncoder().encode(src), { level: 9 });
+  const alpha = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+  let out = '';
+  for (let i = 0; i < compressed.length; i += 3) {
+    const b0 = compressed[i]   || 0;
+    const b1 = compressed[i+1] || 0;
+    const b2 = compressed[i+2] || 0;
+    out += alpha[b0 >> 2];
+    out += alpha[((b0 & 0x3) << 4) | (b1 >> 4)];
+    out += alpha[((b1 & 0xf) << 2) | (b2 >> 6)];
+    out += alpha[b2 & 0x3f];
+  }
+  return '~1' + out;
+}
+
+// ── Tab cycling ────────────────────────────────────────────────────────────
+function cycleTab(dir) {
+  if (tabs.length < 2) return;
+  const i = tabs.findIndex(t => t.id === activeId);
+  if (i < 0) return;
+  const next = (i + dir + tabs.length) % tabs.length;
+  setActive(tabs[next].id);
+}
+
+// ── Keyboard shortcuts ─────────────────────────────────────────────────────
+window.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key === 'Tab')        { e.preventDefault(); cycleTab(e.shiftKey ? -1 : 1); return; }
+  if (mod && e.key === '\\')         { e.preventDefault(); togglePreview(); return; }
+  if (mod && e.key === 'PageDown')   { e.preventDefault(); cycleTab(1);  return; }
+  if (mod && e.key === 'PageUp')     { e.preventDefault(); cycleTab(-1); return; }
+  if (!mod) return;
+  if (!e.shiftKey && e.key === 'n') { e.preventDefault(); FileOps.newFile();   }
+  if (!e.shiftKey && e.key === 'o') { e.preventDefault(); FileOps.openFile();  }
+  if (!e.shiftKey && e.key === 's') { e.preventDefault(); FileOps.saveFile();  }
+  if ( e.shiftKey && e.key === 'S') { e.preventDefault(); FileOps.saveAs();    }
+  if (!e.shiftKey && e.key === 'w') { e.preventDefault(); if (activeId) closeTab(activeId); }
+  if ( e.shiftKey && e.key === 'P') { e.preventDefault(); togglePreview();     }
+});
+
+// ── DOM event wiring ───────────────────────────────────────────────────────
+function wireEvents() {
+  document.getElementById('btn-new').onclick      = () => FileOps.newFile();
+  document.getElementById('btn-open').onclick     = () => FileOps.openFile();
+  document.getElementById('btn-save').onclick     = () => FileOps.saveFile();
+  document.getElementById('btn-download').onclick = () => FileOps.download();
+  document.getElementById('btn-preview').onclick  = togglePreview;
+  document.getElementById('btn-split').onclick    = togglePreview;
+
+  document.getElementById('ab-files').onclick  = toggleFilesPanel;
+  document.getElementById('ab-search').onclick = () =>
+    editor.getAction('actions.find')?.run();
+
+  document.getElementById('files-list').addEventListener('click', e => {
+    const item = e.target.closest('.files-item');
+    if (item) setActive(item.dataset.id);
+  });
+
+  const tabsEl = document.getElementById('tabs-scroll');
+
+  // Left-click: close button or switch tab
+  tabsEl.addEventListener('click', e => {
+    const closeBtn = e.target.closest('.tab-close');
+    if (closeBtn) { closeTab(closeBtn.dataset.id); return; }
+    const tab = e.target.closest('.tab');
+    if (tab) setActive(tab.dataset.id);
+  });
+
+  // Middle-click: close tab
+  tabsEl.addEventListener('auxclick', e => {
+    if (e.button !== 1) return;
+    const tab = e.target.closest('.tab');
+    if (tab) { e.preventDefault(); closeTab(tab.dataset.id); }
+  });
+
+  // Keyboard navigation on tabs
+  tabsEl.addEventListener('keydown', e => {
+    const tab = e.target.closest('.tab');
+    if (!tab) return;
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive(tab.dataset.id); }
+    if (e.key === 'Delete' || e.key === 'Backspace') closeTab(tab.dataset.id);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      cycleTab(e.key === 'ArrowRight' ? 1 : -1);
+      setTimeout(() => document.querySelector('.tab.active')?.focus(), 0);
+    }
+  });
+
+  // Fallback file input (Firefox / Safari)
+  document.getElementById('file-input').addEventListener('change', async e => {
+    for (const f of e.target.files) addTab(f.name, await f.text(), null);
+    e.target.value = '';
+  });
+}
+
+// ── Monaco bootstrap ───────────────────────────────────────────────────────
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs' } });
+
+require(['vs/editor/editor.main'], function () {
+
+  monaco.editor.defineTheme('notes-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: '',           foreground: 'D9D9D9', background: '242424' },
+      { token: 'comment',    foreground: '9D9D9D', fontStyle: 'italic'  },
+      { token: 'keyword',    foreground: '2DAAE4'                        },
+      { token: 'string',     foreground: '8bc34a'                        },
+      { token: 'number',     foreground: 'f7df1e'                        },
+      { token: 'type',       foreground: 'C16D51'                        },
+      { token: 'variable',   foreground: 'D9D9D9'                        },
+      { token: 'function',   foreground: '2DAAE4'                        },
+      { token: 'operator',   foreground: 'B2B2B2'                        },
+      { token: 'delimiter',  foreground: '9D9D9D'                        },
+      { token: 'annotation', foreground: 'C16D51'                        },
+    ],
+    colors: {
+      'editor.background':                    '#242424',
+      'editor.foreground':                    '#D9D9D9',
+      'editor.lineHighlightBackground':       '#2b2b2b',
+      'editor.selectionBackground':           '#2DAAE435',
+      'editor.inactiveSelectionBackground':   '#2DAAE420',
+      'editorCursor.foreground':              '#2DAAE4',
+      'editorCursor.background':              '#101010',
+      'editorLineNumber.foreground':          '#505050',
+      'editorLineNumber.activeForeground':    '#9D9D9D',
+      'editorIndentGuide.background1':        '#333333',
+      'editorIndentGuide.activeBackground1':  '#505050',
+      'editorBracketMatch.background':        '#2DAAE420',
+      'editorBracketMatch.border':            '#2DAAE480',
+      'scrollbar.shadow':                     '#00000000',
+      'scrollbarSlider.background':           '#50505050',
+      'scrollbarSlider.hoverBackground':      '#9D9D9D55',
+      'scrollbarSlider.activeBackground':     '#9D9D9D88',
+      'minimap.background':                   '#1e1e1e',
+      'editorWidget.background':              '#1e1e1e',
+      'editorWidget.border':                  '#505050',
+      'input.background':                     '#242424',
+      'input.border':                         '#505050',
+      'input.foreground':                     '#D9D9D9',
+      'focusBorder':                          '#2DAAE4',
+      'list.hoverBackground':                 '#2DAAE415',
+      'list.activeSelectionBackground':       '#2DAAE430',
+    },
+  });
+
+  const mobile = () => window.innerWidth < 640;
+
+  editor = monaco.editor.create(document.getElementById('editor-container'), {
+    value:                       '',
+    language:                    'plaintext',
+    theme:                       'notes-dark',
+    fontFamily:                  '"Monego", "JetBrains Mono", "Cascadia Code", monospace',
+    fontSize:                    14,
+    lineHeight:                  22,
+    automaticLayout:             true,
+    minimap:                     { enabled: !mobile() },
+    lineNumbers:                 mobile() ? 'off' : 'on',
+    scrollBeyondLastLine:        false,
+    wordWrap:                    'off',
+    renderWhitespace:            'selection',
+    bracketPairColorization:     { enabled: true },
+    smoothScrolling:             true,
+    cursorBlinking:              'smooth',
+    cursorSmoothCaretAnimation:  'on',
+    padding:                     { top: 8, bottom: 8 },
+    tabSize:                     2,
+    detectIndentation:           true,
+    folding:                     true,
+    suggest:                     { preview: true },
+    quickSuggestions:            { other: true, comments: false, strings: false },
+  });
+
+  // Resize → toggle minimap / line numbers
+  window.addEventListener('resize', () => {
+    editor.updateOptions({
+      minimap:     { enabled: !mobile() },
+      lineNumbers: mobile() ? 'off' : 'on',
+    });
+  });
+
+  // Content change → dirty + autosave + preview refresh
+  editor.onDidChangeModelContent(() => {
+    const tab = tabs.find(t => t.id === activeId);
+    if (!tab) return;
+    tab.content = tab.model.getValue();
+    markDirty(tab.id, true);
+    scheduleAutosave(tab);
+    if (previewOpen) schedulePreview();
+  });
+
+  // Cursor → status bar
+  editor.onDidChangeCursorPosition(e => {
+    document.getElementById('status-pos').textContent =
+      `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+  });
+
+  wireEvents();
+
+  // Open with first untitled tab
+  addTab(`Untitled-${++untitledN}`, '', null);
+  editor.focus();
+});
+</script>
+</body>
+</html>
