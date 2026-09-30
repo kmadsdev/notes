@@ -1,5 +1,7 @@
 # notes — Browser Text Editor
 
+> **Update (2026-09-30 refresh):** the UI now uses the Workaholic Design System (Geist type, `#101010`/`#161616` graphite, brand red `#FF014F`) with rounded, VS Code-style panels. The palette, font and Redoc notes below are the original spec; `README.md` and `CLAUDE.md` describe what's current. The default tab size is 4 spaces and can be changed in Settings. OpenAPI and Swagger render with Swagger UI.
+
 A VSCode-inspired text editor that runs entirely in the browser. One HTML file, no backend.
 
 - **Repo:** https://github.com/kmadsdev/notes
