@@ -93,8 +93,11 @@ notes is the fast option in between:
 
 ### Launch videos
 
-- [Desktop tour (37 s, 1920×1200)](assets/video/notes-desktop.mp4)
-- [iPhone tour (34 s, 1080×2340)](assets/video/notes-mobile.mp4)
+<p align="center">
+  <a href="assets/video/notes-desktop.mp4"><img src="assets/video/notes-desktop-poster.jpg" width="68%" alt="Desktop tour video (37 s)"></a>
+  <a href="assets/video/notes-mobile.mp4"><img src="assets/video/notes-mobile-poster.jpg" width="20%" alt="iPhone tour video (34 s)"></a>
+</p>
+<p align="center"><sub><a href="assets/video/notes-desktop.mp4">Desktop tour</a> (37 s, 1920×1200) · <a href="assets/video/notes-mobile.mp4">iPhone tour</a> (34 s, 1080×2340). Free to use in posts, talks and articles about notes.</sub></p>
 
 ## Getting started
 
