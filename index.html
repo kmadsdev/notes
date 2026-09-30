@@ -11,10 +11,10 @@
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
-<!-- Start fetching the editor engine while the page parses (the AMD loader requests these next). -->
+<!-- Start fetching the editor engine while the page parses (the AMD loader requests these next).
+     Do not preload editor.main.css: Monaco's CSS loader skips a stylesheet whose <link> already exists. -->
 <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js">
 <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/editor/editor.main.js">
-<link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/editor/editor.main.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Workaholic Design System type: Geist for words, Geist Mono for code -->
