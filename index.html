@@ -10,6 +10,11 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width=%22200%22 height=%22200%22 viewBox=%220 0 200 200%22 fill=%22none%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M29 22C29 19.2386 31.2386 17 34 17H122.261C123.588 17 124.86 17.5275 125.798 18.4662L170.537 63.2501C171.474 64.1877 172 65.4587 172 66.7839V179C172 181.761 169.761 184 167 184H34C31.2386 184 29 181.761 29 179V22Z%22 stroke=%22%2300A2FF%22 stroke-width=%2218%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M123 21V63C123 65.7614 125.239 68 128 68H170%22 stroke=%22%2300A2FF%22 stroke-width=%2218%22 stroke-linecap=%22round%22/%3E%3Cline x1=%2268%22 y1=%22148.006%22 x2=%2268%22 y2=%2288%22 stroke=%22%2300A1FF%22 stroke-width=%2218%22 stroke-linecap=%22round%22/%3E%3Cline x1=%2268.5211%22 y1=%22147.769%22 x2=%22137.769%22 y2=%22109.479%22 stroke=%22%2300A1FF%22 stroke-width=%2218%22 stroke-linecap=%22round%22/%3E%3Cline x1=%2268.7083%22 y1=%2288.294%22 x2=%22131.294%22 y2=%22144.292%22 stroke=%22%2300A1FF%22 stroke-width=%2218%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<!-- Start fetching the editor engine while the page parses (the AMD loader requests these next). -->
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js">
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/editor/editor.main.js">
+<link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/editor/editor.main.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Workaholic Design System type: Geist for words, Geist Mono for code -->
@@ -486,6 +491,12 @@ button.sb-brand:hover { background: var(--wh-color-accent-hover); color: var(--w
 .qi-sep { height: 1px; background: var(--wh-color-line); margin: 5px 8px; }
 .qi-group { padding: 8px 10px 4px; font: 500 10px/1 var(--wh-font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--wh-color-text-muted); }
 .qi-empty { padding: 14px 12px; color: var(--wh-color-text-muted); }
+.qi-hint { display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 4px 12px 10px; color: var(--wh-color-text-muted); font-size: 13px; }
+.qi-hint b { color: var(--wh-color-text); font-weight: 500; }
+.qi-hint kbd { margin: 0 2px; }
+.qi-hint-key { margin-left: auto; }
+.qi-hint.err { color: var(--wh-color-accent-text); }
+.qi-head .input-wrap:has(input[aria-invalid="true"]) { border-color: var(--wh-color-accent); }
 
 /* ── Menus ─────────────────────────────────────────────────────────────── */
 .menu {
@@ -650,6 +661,7 @@ button.sb-brand:hover { background: var(--wh-color-accent-hover); color: var(--w
   <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
   <symbol id="i-keyboard" viewBox="0 0 24 24"><path d="M10 8h.01"/><path d="M12 12h.01"/><path d="M14 8h.01"/><path d="M16 12h.01"/><path d="M18 8h.01"/><path d="M6 8h.01"/><path d="M7 16h10"/><path d="M8 12h.01"/><rect width="20" height="16" x="2" y="4" rx="2"/></symbol>
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></symbol>
   <symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
 </svg>
 
@@ -706,6 +718,9 @@ button.sb-brand:hover { background: var(--wh-color-accent-hover); color: var(--w
           <svg class="icon icon-lg"><use href="#i-search"/></svg>
         </button>
         <div class="ab-spacer"></div>
+        <a class="ab-item" href="https://github.com/kmadsdev/notes" target="_blank" rel="noopener" aria-label="notes on GitHub" title="notes on GitHub">
+          <svg class="icon icon-lg"><use href="#i-github"/></svg>
+        </a>
         <button class="ab-item" data-view="settings" aria-pressed="false" aria-label="Settings">
           <svg class="icon icon-lg"><use href="#i-settings"/></svg>
         </button>
@@ -1364,7 +1379,7 @@ function setActive(id, { focus = true } = {}) {
   editor.setModel(tab.model);
   if (tab.viewState) editor.restoreViewState(tab.viewState);
   renderAll();
-  if (previewOpen) buildPreview(true);
+  if (previewOpen) buildPreview(true); else warmPreview(tab);
   if (focus && !isMobile()) editor.focus();
   persistSession();
 }
@@ -1411,7 +1426,7 @@ function renderBreadcrumbs() {
   $('#breadcrumbs').innerHTML = t ? `
     <span class="crumb muted">${t.handle ? icon('link') + 'disk' : icon('file') + (isUntitled(t) ? 'untitled' : 'browser')}</span>
     ${icon('chevron-right')}
-    <span class="crumb">${fileIconHtml(t)}${esc(t.name)}</span>
+    <button class="crumb" data-cmd="file.rename" title="Rename (or double-click the tab)">${fileIconHtml(t)}${esc(t.name)}</button>
     ${icon('chevron-right')}
     <button class="crumb muted" data-cmd="editor.changeLanguage">${esc(langLabel(t.language))}</button>` : '';
 }
@@ -1537,10 +1552,28 @@ async function renameTab(tab, name) {
    File operations
    ═══════════════════════════════════════════════════════════════════════════ */
 const FileOps = {
-  newFile() {
-    const t = createTab({ name: `Untitled-${++untitledN}` });
+  /** New file: ask for a name first (Enter on an empty box keeps "Untitled-N"). */
+  async newFile({ prompt = true } = {}) {
     if (isMobile()) closeSidebarDrawer();
-    return t;
+    if (!prompt) return createTab({ name: `Untitled-${++untitledN}` });
+    const name = await askFileName({ title: 'New file', value: '', placeholder: 'File name, e.g. notes.md, api.yaml, diagram.puml', allowEmpty: true });
+    if (name === null) return null;
+    return createTab({ name: name || `Untitled-${++untitledN}` });
+  },
+  /** Rename the tab (and the file on disk, where the browser allows it). */
+  async rename(tab = activeTab()) {
+    if (!tab) return;
+    const name = await askFileName({ title: tab.handle ? `Rename ${tab.name} on disk` : `Rename ${tab.name}`, value: tab.name, self: tab });
+    if (!name || name === tab.name) return;
+    if (tab.handle) {
+      if (typeof tab.handle.move !== 'function') { toast('This browser can\u2019t rename files on disk. Use Save As to write a copy under the new name.', 'error'); return; }
+      try {
+        if (!(await ensurePermission(tab.handle, true))) { toast(`Permission to rename ${tab.name} was not granted.`, 'error'); return; }
+        await tab.handle.move(name);
+      } catch (e) { toast(`Couldn\u2019t rename ${tab.name}: ${e.message}`, 'error'); return; }
+    }
+    await renameTab(tab, name);
+    if (tab.handle) IDB.put(tab.id, tab.handle);
   },
   async open() {
     if (HAS_FS) {
@@ -1735,6 +1768,11 @@ async function refreshFromDisk(tab) {
 const PREVIEW_LABEL = { markdown: 'Markdown', yaml: 'YAML', json: 'JSON', openapi: 'OpenAPI', plantuml: 'PlantUML', mermaid: 'Mermaid', csv: 'Table', html: 'HTML', svg: 'SVG' };
 function previewKind(tab) {
   if (tab.kind !== undefined) return tab.kind;
+  if (!tab.id) return previewKindFor(tab);
+  tab.kind = previewKindFor(tab);
+  return tab.kind;
+}
+function previewKindFor(tab) {
   const lang = tab.language, ext = extOf(tab.name);
   let k = null;
   if (lang === 'markdown' || lang === 'mdx') k = 'markdown';
@@ -1745,7 +1783,6 @@ function previewKind(tab) {
   else if (ext === 'svg' || (lang === 'xml' && /^\s*(<\?xml[^>]*>\s*)?<svg[\s>]/.test(tab.model.getValue().slice(0, 500)))) k = 'svg';
   else if (lang === 'html') k = 'html';
   else if (/^\s*@start\w+/.test(tab.model.getValue().slice(0, 200))) k = 'plantuml';
-  tab.kind = k;
   return k;
 }
 function isOpenApi(text, lang) {
@@ -1756,7 +1793,8 @@ function isOpenApi(text, lang) {
 
 const frames = () => $$('.pv-frame');
 let renderToken = 0, swapTimer = null, pendingFrame = null;
-const PREVIEW_DELAY = { markdown: 180, yaml: 250, json: 250, csv: 300, svg: 250, html: 400, mermaid: 500, plantuml: 700, openapi: 800 };
+// Debounce per renderer. Patchable kinds update in place (no reload), so they can be quick.
+const PREVIEW_DELAY = { markdown: 60, yaml: 90, json: 90, csv: 120, svg: 150, html: 300, mermaid: 250, plantuml: 450, openapi: 350 };
 let previewTimer = null;
 function schedulePreview() {
   const t = activeTab(); if (!t) return;
@@ -1764,6 +1802,13 @@ function schedulePreview() {
   previewTimer = setTimeout(() => buildPreview(false), PREVIEW_DELAY[previewKind(t)] || 300);
 }
 
+/** Fetch a renderer's libraries while the browser is idle, so opening the preview is instant. */
+function warmPreview(tab) {
+  const kind = previewKind(tab);
+  const libs = { markdown: [CDN.marked, CDN.purify], yaml: [CDN.yaml], openapi: [CDN.yaml] }[kind];
+  if (!libs) return;
+  (window.requestIdleCallback || (f => setTimeout(f, 300)))(() => { for (const l of libs) amd(l).catch(() => {}); });
+}
 function togglePreview(force) {
   const want = typeof force === 'boolean' ? force : !previewOpen;
   const t = activeTab();
@@ -1777,7 +1822,7 @@ function togglePreview(force) {
   $('#sash').hidden = !want;
   $('#editor-area').classList.toggle('previewing', want);
   if (want) buildPreview(true);
-  else { renderToken++; for (const f of frames()) f.removeAttribute('srcdoc'); }
+  else { renderToken++; pendingFrame = null; for (const f of frames()) { f.removeAttribute('srcdoc'); f._loaded = false; f._key = null; } }
   renderChrome();
   if (!want && editor && !isMobile()) editor.focus();
   persistSession();
@@ -1789,7 +1834,7 @@ function showPreviewMessage(html) {
   el.innerHTML = html; el.hidden = false;
 }
 
-async function buildPreview(immediate) {
+async function buildPreview(immediate, { force = false } = {}) {
   if (!previewOpen) return;
   const tab = activeTab(); if (!tab) return;
   const kind = previewKind(tab);
@@ -1797,32 +1842,50 @@ async function buildPreview(immediate) {
   $('#preview-kind').textContent = kind ? PREVIEW_LABEL[kind] : '';
   $('#preview-kind').hidden = !kind;
   if (!kind) {
-    for (const f of frames()) f.removeAttribute('srcdoc');
+    for (const f of frames()) { f.removeAttribute('srcdoc'); f._loaded = false; f._key = null; }
     showPreviewMessage(`${icon('eye-off')}<b>No preview for ${esc(langLabel(tab.language))}</b><span>Change the language mode or open a Markdown, YAML, JSON, OpenAPI, PlantUML, Mermaid, CSV, HTML or SVG file.</span>`);
     return;
   }
   const token = ++renderToken;
-  let html;
+  let doc;
   try {
-    html = await renderPreviewDoc(kind, tab);
+    doc = await renderPreviewDoc(kind, tab);
   } catch (e) {
-    html = previewShell(`<div class="error">${icon('alert')}<div><b>Preview failed</b><pre>${esc(e && e.message || e)}</pre></div></div>`, {});
+    doc = previewShell(`<div class="error">${icon('alert')}<div><b>Preview failed</b><pre>${esc(e && e.message || e)}</pre></div></div>`, {});
   }
   if (token !== renderToken || !previewOpen) return;
   showPreviewMessage(null);
   const [a, b] = frames();
   const cur = a.classList.contains('current') ? a : b, next = cur === a ? b : a;
+  const key = `${tab.id}|${kind}|${effectiveTheme()}`;
+  const isDoc = doc instanceof PreviewDoc;
+  // Fast path: the visible frame already shows this file with this renderer and theme,
+  // so patch its content in place instead of reloading a whole document.
+  if (!force && isDoc && !pendingFrame && cur._loaded && cur._key === key) {
+    if (doc.spec != null && cur._spec != null) {
+      if (cur._spec !== doc.spec) { cur._spec = doc.spec; cur.contentWindow.postMessage({ __notes: 1, type: 'spec', spec: doc.spec }, '*'); }
+      return;
+    }
+    if (doc.patchable && cur._patchable && (!doc.mermaid || cur._mermaid)) {
+      if (cur._body !== doc.body) { cur._body = doc.body; cur.contentWindow.postMessage({ __notes: 1, type: 'patch', body: doc.body, mermaid: doc.mermaid }, '*'); }
+      return;
+    }
+  }
+  const html = String(doc);
+  if (!force && !pendingFrame && cur._loaded && cur._key === key && cur._html === html) return;   // nothing changed
   pendingFrame = next;
+  Object.assign(next, { _token: token, _key: key, _html: html, _loaded: false, _body: isDoc ? doc.body : null,
+    _patchable: isDoc && doc.patchable, _mermaid: isDoc && doc.mermaid, _spec: isDoc ? doc.spec : null });
   next.srcdoc = html;
   clearTimeout(swapTimer);
   swapTimer = setTimeout(() => swapTo(next, token), kind === 'html' ? 400 : 2500);
-  next.onload = () => { if (kind === 'html' || kind === 'svg') swapTo(next, token); };
-  next._token = token;
+  next.onload = () => { if (kind === 'html' || kind === 'svg') { next._loaded = true; swapTo(next, token); } };
 }
 function swapTo(frame, token) {
   if (token !== renderToken || pendingFrame !== frame) return;
   clearTimeout(swapTimer);
-  for (const f of frames()) f.classList.toggle('current', f === frame);
+  frame._loaded = true;
+  for (const f of frames()) { f.classList.toggle('current', f === frame); if (f !== frame) f._loaded = false; }
   pendingFrame = null;
 }
 window.addEventListener('message', e => {
@@ -1924,7 +1987,15 @@ const PREVIEW_RUNTIME = `
       parent.postMessage({ __notes: 1, type: 'ready' }, '*'); });
   };
   addEventListener('scroll', function(){ if (restoring) return; var m = maxY(); parent.postMessage({ __notes: 1, type: 'scroll', ratio: m > 0 ? scrollY / m : 0 }, '*'); }, { passive: true });
-  addEventListener('message', function(e){ var d = e.data || {}; if (d.__notes === 1 && d.type === 'scrollTo') scrollTo(0, d.ratio * maxY()); });
+  addEventListener('message', function(e){
+    var d = e.data || {}; if (d.__notes !== 1) return;
+    if (d.type === 'scrollTo') scrollTo(0, d.ratio * maxY());
+    else if (d.type === 'patch') {
+      var root = document.getElementById('pv-root'); if (!root) return;
+      root.innerHTML = d.body;
+      if (d.mermaid && window.__renderMermaid) window.__renderMermaid();
+    }
+  });
   document.addEventListener('click', function(e){
     var a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return;
     e.preventDefault(); var id = decodeURIComponent(a.getAttribute('href').slice(1));
@@ -1933,12 +2004,19 @@ const PREVIEW_RUNTIME = `
   if (!window.__notesAsync) window.__notesDone();
 })();`;
 
-function previewShell(body, { head = '', script = '', async = false, ratio = 0, bodyClass = '' } = {}) {
-  return `<!doctype html><html data-theme="${effectiveTheme()}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<base target="_blank"><link rel="stylesheet" href="${FONTS_CSS}"><style>${PREVIEW_CSS}</style>${head}
-${async ? '<script>window.__notesAsync=true<\/script>' : ''}</head><body class="${bodyClass}">${body}
-<script>${PREVIEW_RUNTIME.replace('__RATIO__', String(Number(ratio) || 0))}<\/script>${script}</body></html>`;
+/** A rendered preview. `body` alone can patch an open frame (see buildPreview). */
+class PreviewDoc {
+  constructor(body, { head = '', script = '', async = false, ratio = 0, patchable = false, mermaid = false, spec = null } = {}) {
+    Object.assign(this, { body, head, script, async, ratio, patchable, mermaid, spec });
+  }
+  toString() {
+    return `<!doctype html><html data-theme="${effectiveTheme()}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base target="_blank"><link rel="stylesheet" href="${FONTS_CSS}"><style>${PREVIEW_CSS}</style>${this.head}
+${this.async ? '<script>window.__notesAsync=true<\/script>' : ''}</head><body><div id="pv-root">${this.body}</div>
+<script>${PREVIEW_RUNTIME.replace('__RATIO__', String(Number(this.ratio) || 0))}<\/script>${this.script}</body></html>`;
+  }
 }
+const previewShell = (body, opts) => new PreviewDoc(body, opts);
 
 async function renderPreviewDoc(kind, tab) {
   const src = tab.model.getValue();
@@ -1969,10 +2047,18 @@ function resolveFenceLang(info) {
   const hit = langs.find(x => x.id === l) || langs.find(x => (x.aliases || []).some(a => a.toLowerCase() === l)) || langs.find(x => (x.extensions || []).includes('.' + l));
   return hit ? hit.id : null;
 }
+const colorCache = new Map();   // lang + code → highlighted HTML; typing elsewhere reuses finished blocks
 async function colorize(code, lang) {
   if (!lang || lang === 'plaintext') return esc(code);
-  try { return await monaco.editor.colorize(code.replace(/\n$/, ''), lang, { tabSize: settings.tabSize }); }
-  catch { return esc(code); }
+  const key = `${lang}\u0000${settings.tabSize}\u0000${code}`;
+  const hit = colorCache.get(key);
+  if (hit !== undefined) { colorCache.delete(key); colorCache.set(key, hit); return hit; }
+  let html;
+  try { html = await monaco.editor.colorize(code.replace(/\n$/, ''), lang, { tabSize: settings.tabSize }); }
+  catch { html = esc(code); }
+  colorCache.set(key, html);
+  if (colorCache.size > 400) colorCache.delete(colorCache.keys().next().value);
+  return html;
 }
 function monacoTokenCss() {
   const el = $$('style').find(s => s.classList.contains('monaco-colors'));
@@ -2012,7 +2098,7 @@ async function renderMarkdown(src, ratio) {
   const body = await md.parse(src);
   const hasMermaid = /class="mermaid"/.test(body);
   return previewShell(`<article class="md">${fmHtml}${body}</article>`, {
-    head: `<style>${monacoTokenCss()}</style>`, async: hasMermaid, ratio,
+    head: `<style>${monacoTokenCss()}</style>`, async: hasMermaid, ratio, patchable: true, mermaid: hasMermaid,
     script: hasMermaid ? mermaidScript() : '',
   });
 }
@@ -2036,10 +2122,10 @@ function treeHtml(val, key, depth, budget) {
 function treeDoc(docs, ratio, note = '') {
   const budget = { n: 20000 };
   const body = docs.map((d, i) => (docs.length > 1 ? `<div class="doc-sep">Document ${i + 1}</div>` : '') + treeHtml(d, null, 0, budget)).join('');
-  return previewShell(`${note}${budget.n < 0 ? '<div class="note">Large document: showing the first 20,000 nodes.</div>' : ''}<div class="tree">${body}</div>`, { ratio });
+  return previewShell(`${note}${budget.n < 0 ? '<div class="note">Large document: showing the first 20,000 nodes.</div>' : ''}<div class="tree">${body}</div>`, { ratio, patchable: true });
 }
 function errorDoc(title, message) {
-  return previewShell(`<div class="error">${icon('alert')}<div><b>${esc(title)}</b><pre>${esc(message)}</pre></div></div>`, {});
+  return previewShell(`<div class="error">${icon('alert')}<div><b>${esc(title)}</b><pre>${esc(message)}</pre></div></div>`, { patchable: true });
 }
 async function renderYaml(src, ratio) {
   const yaml = await amd(CDN.yaml);
@@ -2063,9 +2149,10 @@ async function renderOpenApi(src, lang, ratio) {
   try { spec = lang === 'yaml' ? (await amd(CDN.yaml)).load(src) : JSON.parse(stripJsonComments(src)); }
   catch (e) { return errorDoc('Spec syntax error', e.message); }
   const dark = effectiveTheme() === 'dark';
-  const json = JSON.stringify(spec).replace(/</g, '\\u003c');
+  const specJson = JSON.stringify(spec);
+  const json = specJson.replace(/</g, '\\u003c');
   return previewShell(`<div id="swagger"></div>`, {
-    async: true, ratio,
+    async: true, ratio, spec: specJson,
     head: `<link rel="stylesheet" href="${CDN.swaggerCss}"><style>
       body{font-size:14px} .swagger-ui{font-family:Geist,ui-sans-serif,system-ui,sans-serif}
       .swagger-ui .wrapper{padding:0 20px;max-width:1100px}
@@ -2086,6 +2173,7 @@ async function renderOpenApi(src, lang, ratio) {
           syntaxHighlight: { activated: true, theme: 'agate' }, persistAuthorization: false, tryItOutEnabled: false,
           onComplete: function(){ setTimeout(window.__notesDone, 30); } });
         setTimeout(window.__notesDone, 1500);
+        addEventListener('message', function(e){ var d = e.data || {}; if (d.__notes === 1 && d.type === 'spec' && window.ui) window.ui.specActions.updateSpec(d.spec); });
       } catch (e) { document.body.innerHTML = '<div class="error"><div><b>Swagger UI failed</b><pre></pre></div></div>'; document.querySelector('pre').textContent = String(e && e.message || e); window.__notesDone(); }
     <\/script>`,
   });
@@ -2136,22 +2224,31 @@ async function renderPlantUml(src) {
 function mermaidScript() {
   const dark = effectiveTheme() === 'dark';
   return `<script src="${CDN.mermaid}"><\/script><script>
-    (async function(){
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: '${dark ? 'dark' : 'default'}',
+      fontFamily: 'Geist, ui-sans-serif, system-ui, sans-serif',
+      themeVariables: { primaryColor: '${dark ? '#1C1C1C' : '#FFF0F4'}', primaryBorderColor: '#FF014F', lineColor: '${dark ? '#909090' : '#5E5E5E'}', fontSize: '14px' } });
+    var cache = new Map();   // diagram source → rendered SVG, so editing prose never re-lays-out diagrams
+    window.__renderMermaid = async function(){
+      var old = document.getElementById('mermaid-error'); if (old) old.remove();
+      document.querySelectorAll('.mermaid:not([data-processed])').forEach(function(el){
+        var src = el.textContent; el.setAttribute('data-src', src);
+        if (cache.has(src)) { el.innerHTML = cache.get(src); el.setAttribute('data-processed', 'true'); }
+      });
       try {
-        mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: '${dark ? 'dark' : 'default'}',
-          fontFamily: 'Geist, ui-sans-serif, system-ui, sans-serif',
-          themeVariables: { primaryColor: '${dark ? '#1C1C1C' : '#FFF0F4'}', primaryBorderColor: '#FF014F', lineColor: '${dark ? '#909090' : '#5E5E5E'}', fontSize: '14px' } });
-        await mermaid.run({ querySelector: '.mermaid', suppressErrors: false });
-      } catch (e) {
-        var d = document.createElement('div'); d.className = 'error'; d.innerHTML = '<div><b>Mermaid syntax error</b><pre></pre></div>';
-        d.querySelector('pre').textContent = String(e && (e.message || e.str) || e); document.body.prepend(d);
+        await mermaid.run({ querySelector: '.mermaid:not([data-processed])', suppressErrors: false });
+        document.querySelectorAll('.mermaid[data-processed][data-src]').forEach(function(el){ var k = el.getAttribute('data-src'); if (!cache.has(k)) cache.set(k, el.innerHTML); });
+        if (cache.size > 60) cache.delete(cache.keys().next().value);
       }
-      window.__notesDone();
-    })();
+      catch (e) {
+        var d = document.createElement('div'); d.id = 'mermaid-error'; d.className = 'error'; d.innerHTML = '<div><b>Mermaid syntax error</b><pre></pre></div>';
+        d.querySelector('pre').textContent = String(e && (e.message || e.str) || e); document.getElementById('pv-root').prepend(d);
+      }
+    };
+    window.__renderMermaid().then(function(){ window.__notesDone(); });
   <\/script>`;
 }
 function renderMermaid(src) {
-  return previewShell(`<div class="diagram"><div class="mermaid" style="width:100%">${esc(src)}</div></div>`, { async: true, script: mermaidScript() });
+  return previewShell(`<div class="diagram"><div class="mermaid" style="width:100%">${esc(src)}</div></div>`, { async: true, script: mermaidScript(), patchable: true, mermaid: true });
 }
 
 /* CSV / TSV --------------------------------------------------------------------- */
@@ -2176,7 +2273,7 @@ function renderCsv(src, delim, ratio) {
   const isNum = v => /^\s*-?[\d,.]+(e[+-]?\d+)?%?\s*$/i.test(v) && v.trim() !== '';
   const html = `<div class="grid"><table><thead><tr><th class="idx">#</th>${head.map(h => `<th title="${esc(h)}">${esc(h)}</th>`).join('')}</tr></thead><tbody>${
     body.slice(0, 5000).map((r, i) => `<tr><td class="idx">${i + 1}</td>${r.map(c => `<td class="${isNum(c) ? 'num' : ''}" title="${esc(c)}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-  return previewShell((rows.length > 5000 ? '<div class="note">Showing the first 5,000 rows.</div>' : '') + html, { ratio });
+  return previewShell((rows.length > 5000 ? '<div class="note">Showing the first 5,000 rows.</div>' : '') + html, { ratio, patchable: true });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2200,9 +2297,10 @@ function hl(text, hits) {
   for (let i = 0; i < text.length; i++) out += set.has(i) ? `<mark>${esc(text[i])}</mark>` : esc(text[i]);
   return out;
 }
-function openQuickInput({ placeholder = '', value = '', title = '', items = null, provider = null, onAccept, onCancel, textMode = false }) {
+function openQuickInput({ placeholder = '', value = '', title = '', items = null, provider = null, onAccept, onCancel, textMode = false, validate = null, describe = null }) {
   closeMenu();
   QI.items = items || []; QI.provider = provider; QI.onAccept = onAccept; QI.onCancel = onCancel; QI.focus = 0; QI.textMode = textMode;
+  QI.validate = validate; QI.describe = describe;
   QI.returnFocus = document.activeElement;
   const input = $('#qi-input');
   input.placeholder = placeholder; input.value = value;
@@ -2225,7 +2323,12 @@ function closeQuickInput(cancelled) {
 function renderQuickInput() {
   const q = $('#qi-input').value;
   const list = $('#qi-list');
-  if (QI.textMode) { list.innerHTML = ''; return; }
+  if (QI.textMode) {
+    const err = QI.validate ? QI.validate(q) : null;
+    list.innerHTML = err ? `<div class="qi-hint err" role="alert">${icon('alert')}<span>${esc(err)}</span></div>` : (QI.describe ? QI.describe(q) : '');
+    $('#qi-input').setAttribute('aria-invalid', String(!!err));
+    return;
+  }
   let items = QI.provider ? QI.provider(q) : QI.items;
   const query = QI.provider ? QI.provider.query?.(q) ?? q : q;
   let filtered;
@@ -2249,7 +2352,10 @@ function renderQuickInput() {
 }
 function acceptQuickInput(i = QI.focus) {
   const value = $('#qi-input').value;
-  if (QI.textMode) { const cb = QI.onAccept; QI.onCancel = null; closeQuickInput(false); cb && cb(value); return; }
+  if (QI.textMode) {
+    if (QI.validate && QI.validate(value)) { renderQuickInput(); $('#qi-input').focus(); return; }
+    const cb = QI.onAccept; QI.onCancel = null; closeQuickInput(false); cb && cb(value); return;
+  }
   const it = QI.filtered[i]; if (!it || it.group) return;
   const cb = QI.onAccept; QI.onCancel = null;
   closeQuickInput(false);
@@ -2258,8 +2364,35 @@ function acceptQuickInput(i = QI.focus) {
 function quickPick(opts) {
   return new Promise(res => openQuickInput({ ...opts, onAccept: it => res(it), onCancel: () => res(null) }));
 }
-function quickInputText({ title, value = '', placeholder = '' }) {
-  return new Promise(res => openQuickInput({ title, value, placeholder, textMode: true, onAccept: v => res(v.trim() || null), onCancel: () => res(null) }));
+function quickInputText({ title, value = '', placeholder = '', validate = null, describe = null }) {
+  return new Promise(res => openQuickInput({ title, value, placeholder, textMode: true, validate, describe, onAccept: v => res(v.trim() || null), onCancel: () => res(null) }));
+}
+/** File-name prompt with live validation and a preview of the language it maps to.
+    Resolves to the name, '' (empty allowed) or null (cancelled). */
+function fileNameError(raw, self, allowEmpty) {
+  const name = raw.trim();
+  if (!name) return allowEmpty ? null : 'Enter a file name.';
+  if (/[\\/:*?"<>|\x00-\x1f]/.test(name)) return 'A file name can\u2019t contain / \\ : * ? " < > |';
+  if (name === '.' || name === '..') return 'Pick a different name.';
+  if (name.length > 255) return 'That name is too long (255 characters at most).';
+  if (tabs.some(t => t !== self && t.name.toLowerCase() === name.toLowerCase())) return `A tab named ${name} is already open.`;
+  return null;
+}
+function describeFileName(raw, self, allowEmpty) {
+  const name = raw.trim();
+  if (!name) return `<div class="qi-hint">${icon('file-plus')}<span>${allowEmpty ? `Press <kbd>Enter</kbd> for <b>Untitled-${untitledN + 1}</b>; its language is detected as you type.` : 'Type a name.'}</span></div>`;
+  const lang = detectLang(name);
+  const kind = previewKind({ name, language: lang, model: { getValue: () => '' } });
+  const pv = kind ? ` · ${PREVIEW_LABEL[kind]} preview` : '';
+  return `<div class="qi-hint">${fileIconHtml({ name, language: lang })}<span><b>${esc(name)}</b> · ${esc(langLabel(lang))}${pv}</span><span class="qi-hint-key">${kbdHtml('Enter')}</span></div>`;
+}
+function askFileName({ title, value = '', placeholder = 'File name', self = null, allowEmpty = false }) {
+  return new Promise(res => openQuickInput({
+    title, value, placeholder, textMode: true,
+    validate: v => fileNameError(v, self, allowEmpty),
+    describe: v => describeFileName(v, self, allowEmpty),
+    onAccept: v => res(v.trim()), onCancel: () => res(null),
+  }));
 }
 
 function openCommandPalette(prefix = '>') {
@@ -2293,8 +2426,7 @@ const COMMANDS = [
   { id: 'file.saveAs', label: 'Save As…', category: 'File', when: needsTab, run: () => FileOps.saveAs() },
   { id: 'file.saveAll', label: 'Save All', category: 'File', run: () => FileOps.saveAll() },
   { id: 'file.download', label: 'Download', category: 'File', icon: 'download', when: needsTab, run: () => FileOps.download() },
-  { id: 'file.rename', label: 'Rename…', category: 'File', when: () => needsTab() && !activeTab().handle, keywords: 'extension name',
-    run: async () => { const t = activeTab(); const n = await quickInputText({ title: 'Rename tab (the extension picks the language and preview)', value: t.name }); if (n) renameTab(t, n); } },
+  { id: 'file.rename', label: 'Rename…', category: 'File', when: needsTab, keywords: 'extension name file', run: () => FileOps.rename() },
   { id: 'file.revert', label: 'Revert File', category: 'File', when: () => needsTab() && !!activeTab().handle, run: () => refreshFromDisk(activeTab()) },
   { id: 'editor.close', label: 'Close Editor', category: 'View', when: needsTab, run: () => activeId && closeTab(activeId) },
   { id: 'editor.closeOthers', label: 'Close Other Editors', category: 'View', when: needsTab, run: () => closeTabs(tabs.filter(t => t.id !== activeId).map(t => t.id)) },
@@ -2327,7 +2459,7 @@ const COMMANDS = [
   { id: 'view.toggleSidebar', label: 'Toggle Primary Side Bar', category: 'View', icon: 'panel-left', run: () => toggleSidebar() },
   { id: 'view.closeSidebar', label: 'Close Side Bar', category: 'View', palette: false, run: () => toggleSidebar(false) },
   { id: 'view.togglePreview', label: 'Toggle Preview', category: 'View', icon: 'eye', keywords: 'markdown yaml swagger openapi plantuml mermaid', run: () => togglePreview() },
-  { id: 'preview.refresh', label: 'Refresh Preview', category: 'View', when: () => previewOpen, run: () => buildPreview(true) },
+  { id: 'preview.refresh', label: 'Refresh Preview', category: 'View', when: () => previewOpen, run: () => buildPreview(true, { force: true }) },
   { id: 'view.wordWrap', label: 'Toggle Word Wrap', category: 'View', icon: 'wrap', run: () => setSetting('wordWrap', settings.wordWrap === 'off' ? 'on' : 'off') },
   { id: 'view.minimap', label: 'Toggle Minimap', category: 'View', run: () => setSetting('minimap', !settings.minimap) },
   { id: 'view.toggleTheme', label: 'Toggle Light/Dark Theme', category: 'Preferences', icon: 'palette', run: () => setSetting('theme', effectiveTheme() === 'dark' ? 'light' : 'dark') },
@@ -2337,7 +2469,7 @@ const COMMANDS = [
   { id: 'view.fontReset', label: 'Reset Editor Font Size', category: 'View', run: () => setSetting('fontSize', DEFAULTS.fontSize) },
   { id: 'help.shortcuts', label: 'Keyboard Shortcuts', category: 'Help', icon: 'keyboard', run: () => showShortcuts() },
   { id: 'help.about', label: 'About notes', category: 'Help', icon: 'info', run: () => toast('notes — a VS Code-style editor that runs entirely in your browser. Files never leave your device, except PlantUML diagram source, which is sent to the PlantUML server you choose.', 'info', 9000) },
-  { id: 'help.repo', label: 'View Source on GitHub', category: 'Help', icon: 'git', run: () => window.open('https://github.com/kmadsdev/notes', '_blank', 'noopener') },
+  { id: 'help.repo', label: 'View Source on GitHub', category: 'Help', icon: 'github', run: () => window.open('https://github.com/kmadsdev/notes', '_blank', 'noopener') },
   { id: 'session.clear', label: 'Clear Saved Session', category: 'Preferences', keywords: 'reset storage', run: async () => { store(STORE_SESSION, undefined); await IDB.clear(); toast('Saved session cleared. Open tabs stay until you reload.', 'ok'); } },
 ];
 const CMD = Object.fromEntries(COMMANDS.map(c => [c.id, c]));
@@ -2519,7 +2651,7 @@ function closeSidebarDrawer() { if (isMobile()) toggleSidebar(false); }
 function showView(view) {
   const same = sideView === view;
   sideView = view;
-  for (const b of $$('.ab-item')) b.setAttribute('aria-pressed', String(b.dataset.view === view));
+  for (const b of $$('.ab-item[data-view]')) b.setAttribute('aria-pressed', String(b.dataset.view === view));
   for (const v of $$('.sidebar .view')) v.hidden = v.dataset.view !== view;
   if (isMobile()) { if (!$('#side').classList.contains('open')) toggleSidebar(true); }
   else if (!sidebarVisible) toggleSidebar(true);
@@ -2625,6 +2757,7 @@ function applySettings(changed) {
   document.documentElement.dataset.theme = theme;
   document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.content = theme === 'dark' ? '#101010' : '#F5F5F5');
   if (!window.monaco || !editor) return;
+  if (monaco.editor._notesTheme !== theme) { colorCache.clear(); monaco.editor._notesTheme = theme; }   // token classes are per theme
   monaco.editor.setTheme('wh-' + theme);
   editor.updateOptions(editorOptions());
   if (changed === 'fontFamily' || changed === undefined) ensureFont(settings.fontFamily).then(() => monaco.editor.remeasureFonts());
@@ -2691,7 +2824,9 @@ function wireDom() {
   const tabsEl = $('#tabs');
   tabsEl.addEventListener('click', e => {
     const close = e.target.closest('[data-close]'); if (close) { e.stopPropagation(); closeTab(close.dataset.close); return; }
-    const t = e.target.closest('.tab'); if (t) setActive(t.dataset.id);
+    const t = e.target.closest('.tab'); if (!t) return;
+    if (e.detail === 2) { FileOps.rename(tabs.find(x => x.id === t.dataset.id)); return; }
+    setActive(t.dataset.id);
   });
   tabsEl.addEventListener('auxclick', e => { if (e.button !== 1) return; const t = e.target.closest('.tab'); if (t) { e.preventDefault(); closeTab(t.dataset.id); } });
   tabsEl.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });
@@ -2721,13 +2856,15 @@ function wireDom() {
   // Explorer
   $('#open-editors').addEventListener('click', e => {
     const close = e.target.closest('[data-close]'); if (close) { e.stopPropagation(); closeTab(close.dataset.close); return; }
-    const it = e.target.closest('.file-item'); if (it) { setActive(it.dataset.id); closeSidebarDrawer(); }
+    const it = e.target.closest('.file-item'); if (!it) return;
+    if (e.detail === 2) { FileOps.rename(tabs.find(x => x.id === it.dataset.id)); return; }
+    setActive(it.dataset.id); if (isMobile()) setTimeout(() => { if (!$('#quick-input').hidden) return; closeSidebarDrawer(); }, 280);
   });
   $('#oe-head').addEventListener('click', e => { const b = e.currentTarget; const open = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', String(open)); $('#open-editors').hidden = !open; });
   $('#fs-hint').textContent = HAS_FS ? 'Files opened here save straight back to disk.' : 'This browser can’t write to disk: use Download to save.';
 
   // Activity bar
-  for (const b of $$('.ab-item')) b.addEventListener('click', () => {
+  for (const b of $$('.ab-item[data-view]')) b.addEventListener('click', () => {
     const same = sideView === b.dataset.view;
     if (same && !isMobile() && sidebarVisible) toggleSidebar(false); else showView(b.dataset.view);
   });
@@ -2911,7 +3048,7 @@ async function onMonaco() {
   ensureFont(settings.fontFamily).then(() => document.fonts.ready).then(() => monaco.editor.remeasureFonts());
 
   wireDom();
-  if (!(await restoreSession())) FileOps.newFile();
+  if (!(await restoreSession())) FileOps.newFile({ prompt: false });
   showView(sideView === 'settings' || sideView === 'search' ? sideView : 'explorer');
   if (isMobile()) toggleSidebar(false);
   $('#workbench').classList.toggle('no-sidebar', !sidebarVisible && !isMobile());
