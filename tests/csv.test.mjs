@@ -7,7 +7,8 @@ import { readFileSync } from 'node:fs';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const core = html.match(/\/\/ <csv-core>.*\n([\s\S]*?)\/\/ <\/csv-core>/);
 assert.ok(core, 'index.html must keep the // <csv-core> ... // </csv-core> markers');
-const { parseDelimited, delimitedLineTokens } = new Function(`${core[1]}; return { parseDelimited, delimitedLineTokens };`)();
+const { parseDelimited, delimitedLineTokens, isTablePreview, tableDelim } =
+  new Function(`${core[1]}; return { parseDelimited, delimitedLineTokens, isTablePreview, tableDelim };`)();
 
 // Tokenize a whole document line by line, like Monaco does, and return the text of each token.
 function spans(text, delim) {
@@ -81,4 +82,33 @@ test('editor tokens and preview parser agree on the column count', () => {
     if (!state.q) { counts.push(cols + 1); cols = 0; }
   }
   assert.deepEqual(counts, rows.map(r => r.length));
+});
+
+test('editor tokens: CSV guesses the delimiter from line 1, like the preview (pt-BR Excel: ";" and decimal commas)', () => {
+  const doc = 'preco;qtd\n1,5;2,3';
+  assert.deepEqual(spans(doc, null), [
+    [['col.0', 'preco'], ['delimiter', ';'], ['col.1', 'qtd']],
+    [['col.0', '1,5'], ['delimiter', ';'], ['col.1', '2,3']],
+  ]);
+  assert.deepEqual(parseDelimited(doc, null), [['preco', 'qtd'], ['1,5', '2,3']]);
+  assert.deepEqual(spans('a|b\tc|d', null)[0].filter(([t]) => t !== 'delimiter').map(([, s]) => s), ['a', 'b\tc', 'd']);
+  assert.deepEqual(spans('a,b', null), spans('a,b', ','));
+});
+test('table preview: also for a CSV/TSV mode chosen in the language picker', () => {
+  assert.equal(isTablePreview('csv', 'txt'), true);
+  assert.equal(isTablePreview('tsv', ''), true);
+  assert.equal(isTablePreview('plaintext', 'csv'), true);
+  assert.equal(isTablePreview('plaintext', 'txt'), false);
+  assert.equal(tableDelim('tsv', 'txt'), '\t');
+  assert.equal(tableDelim('plaintext', 'tsv'), '\t');
+  assert.equal(tableDelim('csv', 'csv'), null);
+});
+test('editor tokens: only the first 20,000 chars of a line get colours; quote state still counts the rest', () => {
+  const long = 'x,'.repeat(10500) + '"open';
+  const r = delimitedLineTokens(long, ',');
+  assert.ok(r.tokens.length > 2);
+  assert.ok(r.tokens.slice(0, -1).every(t => t.start < 20000));
+  assert.deepEqual(r.tokens.at(-1), { start: 20000, type: '' });
+  assert.equal(r.state.q, true);
+  assert.equal(r.state.col, 10500);
 });
