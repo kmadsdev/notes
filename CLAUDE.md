@@ -33,11 +33,13 @@ Parent-page libraries load through Monaco's AMD loader under path aliases (`mark
 
 There's no build step. Serve the folder (`npx http-server .`) and open it in Chrome. File sync (`showOpenFilePicker` / `showSaveFilePicker`) needs a secure context (https or localhost).
 
+Tests: `node --test tests/` (Node 20+, no install). They load the pure functions between the `// <csv-core>` markers in `index.html`; keep those functions free of DOM and Monaco.
+
 ## Architecture (all in `index.html`)
 
 - **Tabs**: `{ id, name, handle, model, language, langOverride, savedVersion, indentSource, viewState, … }`, one Monaco model per tab. The model URI is `file:///<id>/<name>` so the TS/JS workers see the extension (JSX/TSX). A tab is dirty when `model.getAlternativeVersionId() !== savedVersion`, so undoing back to the saved state clears the dirty flag.
-- **Indentation**: `applyIndentation()` applies `settings.tabSize` (default **4**) and `insertSpaces`, or detects indentation from content when `detectIndentation` is on. `LANG_INDENT` forces tabs for Makefile and Go and spaces for YAML. A user choice from the status bar (`indentSource: 'user'`) is never overwritten.
-- **Languages**: `detectLang()` checks `NAME_LANG` (Dockerfile, Makefile, dotfiles), then `EXT_LANG` overrides, then Monaco's own registry. Untitled files are content-sniffed (`sniffLang`). Extra Monarch grammars live in `registerExtraLanguages()`.
+- **Indentation**: `applyIndentation()` applies `settings.tabSize` (default **4**) and `insertSpaces`, or detects indentation from content when `detectIndentation` is on. `LANG_INDENT` forces tabs for Makefile, Go and TSV and spaces for YAML. A user choice from the status bar (`indentSource: 'user'`) is never overwritten.
+- **Languages**: `detectLang()` checks `NAME_LANG` (Dockerfile, Makefile, dotfiles), then `EXT_LANG` overrides, then Monaco's own registry. Untitled files are content-sniffed (`sniffLang`). Extra Monarch grammars live in `registerExtraLanguages()`. CSV and TSV use a plain tokens provider there (one colour per column, `col.0`–`col.7` theme rules), driven by the tested `delimitedLineTokens()`.
 - **Themes**: `wh-dark` / `wh-light` in `defineThemes()`, built from the Workaholic tokens plus the `SYNTAX` palette. The shell uses the DS CSS tokens (`--wh-color-*`) with `[data-theme]`.
 - **Preview**: `previewKind(tab)` picks the renderer. Output goes into one of two sandboxed iframes (`allow-scripts allow-popups`, no same-origin) that are double-buffered: the hidden frame renders, then posts `{__notes:1,type:'ready'}` and the frames swap, so updates don't flicker. Scroll position is kept per tab, and Markdown scroll follows the editor.
 - **Commands**: `COMMANDS` is the single registry for the palette, menus (`MENUS`) and keybindings (`KEYS`, captured on `window` before Monaco).
