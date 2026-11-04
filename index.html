@@ -2003,7 +2003,7 @@ const PREVIEW_RUNTIME = `
   };
   addEventListener('scroll', function(){ if (restoring) return; var m = maxY(); parent.postMessage({ __notes: 1, type: 'scroll', ratio: m > 0 ? scrollY / m : 0 }, '*'); }, { passive: true });
   addEventListener('message', function(e){
-    var d = e.data || {}; if (d.__notes !== 1) return;
+    var d = e.data || {}; if (d.__notes !== 1 || e.source !== parent) return;   // only the editor may patch this frame
     if (d.type === 'scrollTo') scrollTo(0, d.ratio * maxY());
     else if (d.type === 'patch') {
       var root = document.getElementById('pv-root'); if (!root) return;
@@ -2188,7 +2188,7 @@ async function renderOpenApi(src, lang, ratio) {
           syntaxHighlight: { activated: true, theme: 'agate' }, persistAuthorization: false, tryItOutEnabled: false,
           onComplete: function(){ setTimeout(window.__notesDone, 30); } });
         setTimeout(window.__notesDone, 1500);
-        addEventListener('message', function(e){ var d = e.data || {}; if (d.__notes === 1 && d.type === 'spec' && window.ui) window.ui.specActions.updateSpec(d.spec); });
+        addEventListener('message', function(e){ var d = e.data || {}; if (d.__notes === 1 && e.source === parent && d.type === 'spec' && window.ui) window.ui.specActions.updateSpec(d.spec); });
       } catch (e) { document.body.innerHTML = '<div class="error"><div><b>Swagger UI failed</b><pre></pre></div></div>'; document.querySelector('pre').textContent = String(e && e.message || e); window.__notesDone(); }
     <\/script>`,
   });
