@@ -1025,10 +1025,10 @@ const EXT_LANG = {
   zsh: 'shell', bash: 'shell', fish: 'shell', ksh: 'shell',
   tf: 'hcl', tfvars: 'hcl', nomad: 'hcl',
   gql: 'graphql', graphql: 'graphql',
-  txt: 'plaintext', text: 'plaintext', csv: 'plaintext', tsv: 'plaintext',
+  txt: 'plaintext', text: 'plaintext', csv: 'csv', tsv: 'tsv',
 };
 // Indentation a language requires regardless of user defaults.
-const LANG_INDENT = { makefile: { insertSpaces: false }, go: { insertSpaces: false }, yaml: { insertSpaces: true } };
+const LANG_INDENT = { makefile: { insertSpaces: false }, go: { insertSpaces: false }, yaml: { insertSpaces: true }, tsv: { insertSpaces: false } };
 
 let extIndex = null;
 function buildExtIndex() {
@@ -1196,6 +1196,20 @@ function registerExtraLanguages() {
   reg({ id: 'ignore', aliases: ['Ignore'], filenames: ['.gitignore', '.dockerignore', '.npmignore'] }, {
     tokenizer: { root: [[/^\s*#.*$/, 'comment'], [/^!/, 'keyword'], [/[*?]|\*\*/, 'operator'], [/\/$/, 'delimiter']] },
   }, { comments: { lineComment: '#' } });
+
+  // CSV / TSV: one colour per column (cycles after 8). A plain tokens provider, not Monarch, because a quoted field
+  // can span lines and the column must survive the line break; delimitedLineTokens() is unit-tested in tests/.
+  const csvState = (col, q, d) => ({ col, q, d, clone: () => csvState(col, q, d), equals: o => o.col === col && o.q === q && o.d === d });
+  for (const [id, delim, extensions] of [['csv', null, ['.csv']], ['tsv', '\t', ['.tsv']]]) {
+    L.register({ id, extensions, aliases: [id.toUpperCase(), id] });
+    L.setTokensProvider(id, {
+      getInitialState: () => csvState(0, false, null),
+      tokenize(line, s) {
+        const r = delimitedLineTokens(line, delim, s);
+        return { tokens: r.tokens.map(t => ({ startIndex: t.start, scopes: t.type })), endState: csvState(r.state.col, r.state.q, r.state.d) };
+      },
+    });
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1233,6 +1247,7 @@ function defineThemes() {
         r('diff.inserted', c.ins), r('diff.deleted', c.del),
         r('log.error', c.del, 'bold'), r('log.warn', c.warn, 'bold'), r('log.info', c.func), r('log.debug', c.muted), r('log.date', c.type), r('log.url', c.func, 'underline'),
         r('invalid', c.del),
+        ...[c.func, c.string, c.keyword, c.type, c.attr, c.number, c.ins, c.fg].map((fg, i) => r('col.' + i, fg)),
       ],
       colors: dark ? {
         'editor.background': '#161616', 'editor.foreground': '#E1E1E1',
@@ -1310,7 +1325,7 @@ const LANG_ICON = {
   html: ['code', '#F06529'], xml: ['code', '#F2A86B'], css: ['palette', '#4DA3FF'], scss: ['palette', '#CD6799'], less: ['palette', '#4D7CC0'],
   shell: ['terminal', '#4FCB8A'], powershell: ['terminal', '#4DA3FF'], bat: ['terminal', '#C1C1C1'], dockerfile: ['file-code', '#2496ED'], makefile: ['terminal', '#E8C07D'],
   sql: ['database', '#E8C07D'], mysql: ['database', '#4DA3FF'], pgsql: ['database', '#5FA8D3'], graphql: ['webhook', '#E535AB'],
-  diff: ['git', '#4FCB8A'], ignore: ['git', '#909090'], log: ['file-text', '#909090'],
+  diff: ['git', '#4FCB8A'], ignore: ['git', '#909090'], log: ['file-text', '#909090'], csv: ['table', '#4FCB8A'], tsv: ['table', '#4FCB8A'],
 };
 function fileIconHtml(tab) {
   const ext = extOf(tab.name);
@@ -1734,7 +1749,7 @@ async function restoreSession() {
   untitledN = data.untitledN || 0;
   for (const s of data.tabs) {
     const handle = s.handle ? await IDB.get(s.id) : null;
-    const tab = createTab({ id: s.id, name: s.name, content: s.content || '', handle: handle || null, language: s.langOverride ? s.language : (s.language || null),
+    const tab = createTab({ id: s.id, name: s.name, content: s.content || '', handle: handle || null, language: s.langOverride ? s.language : ((s.language !== 'plaintext' && s.language) || null), // re-detect plain text: new modes (CSV/TSV)
       langOverride: !!s.langOverride, dirty: !!s.dirty && !!(s.handle || !isUntitledName(s.name) || s.content), activate: false, everSaved: !!s.everSaved });
     if (s.eol === '\r\n') { tab.model.setEOL(1); tab.savedVersion = s.dirty ? -1 : tab.model.getAlternativeVersionId(); }
     if (s.indent) { tab.model.updateOptions(s.indent); tab.indentSource = 'user'; }
@@ -1779,7 +1794,7 @@ function previewKindFor(tab) {
   else if (lang === 'plantuml') k = 'plantuml';
   else if (lang === 'mermaid') k = 'mermaid';
   else if (lang === 'yaml' || lang === 'json') k = isOpenApi(tab.model.getValue(), lang) ? 'openapi' : lang;
-  else if (ext === 'csv' || ext === 'tsv') k = 'csv';
+  else if (isTablePreview(lang, ext)) k = 'csv';
   else if (ext === 'svg' || (lang === 'xml' && /^\s*(<\?xml[^>]*>\s*)?<svg[\s>]/.test(tab.model.getValue().slice(0, 500)))) k = 'svg';
   else if (lang === 'html') k = 'html';
   else if (/^\s*@start\w+/.test(tab.model.getValue().slice(0, 200))) k = 'plantuml';
@@ -2028,7 +2043,7 @@ async function renderPreviewDoc(kind, tab) {
     case 'openapi':  return renderOpenApi(src, tab.language, ratio);
     case 'plantuml': return renderPlantUml(src);
     case 'mermaid':  return renderMermaid(src);
-    case 'csv':      return renderCsv(src, extOf(tab.name) === 'tsv' ? '\t' : null, ratio);
+    case 'csv':      return renderCsv(src, tableDelim(tab.language, extOf(tab.name)), ratio);
     case 'svg':      return previewShell(`<div class="svgview"><img alt="SVG preview" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(src)}"></div>`, {});
     case 'html':     return src;
   }
@@ -2252,8 +2267,15 @@ function renderMermaid(src) {
 }
 
 /* CSV / TSV --------------------------------------------------------------------- */
+// <csv-core> Pure functions, no DOM or Monaco. tests/csv.test.mjs loads the code between these markers.
+/** The most frequent of , ; tab | in the first line (ties and none: comma). Shared by the preview and the editor colours. */
+function sniffDelimiter(text) {
+  const c = { ',': 0, ';': 0, '\t': 0, '|': 0 };
+  for (const ch of text.slice(0, 2000).split('\n')[0]) if (ch in c) c[ch]++;
+  return Object.entries(c).sort((a, b) => b[1] - a[1])[0][0];
+}
 function parseDelimited(text, delim) {
-  if (!delim) { const first = text.slice(0, 2000).split('\n')[0]; const c = { ',': 0, ';': 0, '\t': 0, '|': 0 }; for (const ch of first) if (ch in c) c[ch]++; delim = Object.entries(c).sort((a, b) => b[1] - a[1])[0][0]; }
+  delim ||= sniffDelimiter(text);
   const rows = []; let row = [], cell = '', q = false;
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
@@ -2266,6 +2288,32 @@ function parseDelimited(text, delim) {
   if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
   return rows;
 }
+/**
+ * One editor line of CSV/TSV -> coloured spans. `state.q` carries a quoted field (with its column) to the next line.
+ * `delim` null = guess it from the first line (state.d keeps the guess), the same rule as the preview.
+ */
+// ponytail: colour only the first 20,000 chars of a line (Monarch's own limit); the rest is one plain token. The scan
+// still runs to the end so the quote state stays right. Lines that long are rare, and colours would cost a token per column.
+const CSV_MAX_COLOURED = 20000;
+function delimitedLineTokens(line, delim, state = { col: 0, q: false }) {
+  let { col, q } = state, fieldStart = !q;
+  const d = state.d || delim || sniffDelimiter(line);
+  const tokens = [], push = (start, type) => { if (start < CSV_MAX_COLOURED && tokens.at(-1)?.type !== type) tokens.push({ start, type }); };
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (!q && ch === d) { push(i, 'delimiter'); col++; fieldStart = true; continue; }
+    push(i, 'col.' + (col % 8));
+    if (q) { if (ch === '"') { if (line[i + 1] === '"') i++; else q = false; } }
+    else if (ch === '"' && fieldStart) q = true;
+    fieldStart = false;
+  }
+  if (line.length > CSV_MAX_COLOURED) tokens.push({ start: CSV_MAX_COLOURED, type: '' });
+  return { tokens, state: { col: q ? col : 0, q, d } };
+}
+/** Table preview for .csv/.tsv files and for the CSV/TSV modes chosen in the language picker. */
+const isTablePreview = (lang, ext) => lang === 'csv' || lang === 'tsv' || ext === 'csv' || ext === 'tsv';
+const tableDelim = (lang, ext) => lang === 'tsv' || ext === 'tsv' ? '\t' : null;
+// </csv-core>
 function renderCsv(src, delim, ratio) {
   const rows = parseDelimited(src, delim);
   if (!rows.length) return previewShell('<div class="note">Empty file.</div>', {});
