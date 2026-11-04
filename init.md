@@ -1,6 +1,6 @@
 # notes — Browser Text Editor
 
-> **Update (2026-09-30 refresh):** the UI now uses the Workaholic Design System (Geist type, `#101010`/`#161616` graphite, brand red `#FF014F`) with rounded, VS Code-style panels. The palette, font and Redoc notes below are the original spec; `README.md` and `CLAUDE.md` describe what's current. The default tab size is 4 spaces and can be changed in Settings. OpenAPI and Swagger render with Swagger UI.
+> **Update (2026-09-30 refresh):** the UI now uses the Workaholic Design System (Geist type, `#101010`/`#161616` graphite, brand red `#FF014F`) with rounded, VS Code-style panels. The palette, font and Redoc notes below are the original spec; `README.md` and `CLAUDE.md` describe what's current. The default tab size is 4 spaces and can be changed in Settings. OpenAPI and Swagger render with Swagger UI. New files ask for a name first, and double-clicking a tab or Explorer entry renames it.
 
 A VSCode-inspired text editor that runs entirely in the browser. One HTML file, no backend.
 
@@ -30,7 +30,8 @@ A VSCode-inspired text editor that runs entirely in the browser. One HTML file, 
 ### File operations
 | Action | Mechanism |
 |---|---|
-| New file | Create blank tab with generated name (`Untitled-1`, etc.) |
+| New file | Ask for a file name, then create the tab (empty name → `Untitled-1`, etc.) |
+| Rename | Double-click the tab or Explorer entry → same name prompt; files from disk are moved with `handle.move()` |
 | Open file | `window.showOpenFilePicker()` → new tab, `handle` stored |
 | Save | `handle.createWritable()` → write back to disk |
 | Save As | `window.showSaveFilePicker()` → new handle, replace tab's handle |
