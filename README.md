@@ -20,7 +20,7 @@ VS Code's editor engine, live previews for a dozen formats, saves straight back 
 
 <br>
 
-<a href="assets/video/notes-desktop.mp4"><img src="assets/gif/notes-workflow.gif" alt="Creating a Markdown file in notes: name it, type, paste a Mermaid block and watch the preview render live" width="880"></a>
+<a href="assets/video/notes-desktop.mp4"><img src="assets/anim/notes-workflow.webp" alt="Creating a Markdown file in notes: name it, type, paste a Mermaid block and watch the preview render live" width="880"></a>
 
 </div>
 
@@ -68,8 +68,8 @@ notes is the fast option in between:
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/gif/notes-previews.gif" alt="Switching between OpenAPI, YAML, Mermaid and CSV previews"></td>
-    <td width="50%" align="center"><img src="assets/gif/notes-mobile.gif" alt="notes on a phone: a new file, a tap to preview, Swagger UI and Mermaid" height="420"></td>
+    <td width="50%"><img src="assets/anim/notes-previews.webp" alt="Switching between OpenAPI, YAML, Mermaid and CSV previews"></td>
+    <td width="50%" align="center"><img src="assets/anim/notes-mobile.webp" alt="notes on a phone: a new file, a tap to preview, Swagger UI and Mermaid" height="420"></td>
   </tr>
   <tr>
     <td align="center"><sub>Every preview updates as you type</sub></td>

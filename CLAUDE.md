@@ -11,7 +11,7 @@ A browser-based text editor inspired by VSCode — single HTML file, no backend,
 - Design reference: `prototype.svg`
 - Feature spec: `init.md` (the original spec; README and this file describe what's current)
 - Contributor docs: `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md` (update it with every user-visible change)
-- Media: `assets/video` (launch videos), `assets/gif` (README GIFs), `assets/screenshots`
+- Media: `assets/video` (launch videos), `assets/anim` (README animations, animated WebP: `gif2webp -lossy -q 75`, about half the size of a GIF), `assets/screenshots`
 
 ## Stack constraints
 

@@ -9,7 +9,7 @@ All notable changes to notes are documented here. The format follows [Keep a Cha
 - New files ask for a name first, so the right language and preview apply from the start. Leave it empty to get `Untitled-N`.
 - Rename a file by double-clicking its tab or its Explorer entry, or by clicking its name in the breadcrumbs. Names are validated as you type. Files opened from disk are renamed on disk too where the browser supports it.
 - GitHub link in the activity bar, above Settings.
-- Launch videos (desktop and iPhone), workflow GIFs and screenshots in `assets/`.
+- Launch videos (desktop and iPhone), workflow animations (animated WebP) and screenshots in `assets/`.
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue forms and a pull request template.
 
 ### Changed
