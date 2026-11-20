@@ -11,6 +11,7 @@ All notable changes to notes are documented here. The format follows [Keep a Cha
 - GitHub link in the activity bar, above Settings.
 - Launch videos (desktop and iPhone), workflow animations (animated WebP) and screenshots in `assets/`.
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue forms and a pull request template.
+- The editor's "..." menu has an icon on every item (Lucide, same size and colour) and a new "Enable/Disable Word Wrap" entry.
 
 ### Changed
 
